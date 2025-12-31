@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { 
@@ -408,13 +409,15 @@ const App: React.FC = () => {
               </div>
             </section>
 
-            {/* Tabla Detallada */}
+            {/* Tabla Detallada Responsive */}
             <section className="bg-slate-900 rounded-2xl shadow-xl border border-slate-800 overflow-hidden">
-              <div className="px-8 py-6 border-b border-slate-800 flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-white">Resumen de Días Anuales</h2>
+              <div className="px-6 sm:px-8 py-6 border-b border-slate-800 flex flex-col sm:flex-row gap-4 justify-between items-center text-center sm:text-left">
+                <h2 className="text-xl sm:text-2xl font-bold text-white">Resumen de Días Anuales</h2>
                 <span className="text-xs font-bold text-slate-500 bg-slate-800 px-3 py-1 rounded-full uppercase tracking-widest">Año {year}</span>
               </div>
-              <div className="overflow-x-auto">
+              
+              {/* Desktop View (Table) */}
+              <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full text-left">
                   <thead className="bg-slate-900/50 border-b border-slate-800">
                     <tr>
@@ -568,6 +571,142 @@ const App: React.FC = () => {
                     })}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile View (Cards) */}
+              <div className="lg:hidden p-4 space-y-4 bg-slate-900">
+                {results.map((r, index) => {
+                   const baseline = results[0];
+                   const isBaseline = index === 0;
+                   const isActive = activeDetailId === r.id;
+
+                   return (
+                      <div key={r.id} className="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden">
+                        {/* Card Header */}
+                        <div className="p-4 border-b border-slate-700/50 flex justify-between items-start">
+                           <div>
+                              <div className="flex items-center gap-2">
+                                 <span className="font-bold text-white text-lg">{r.rotationName}</span>
+                                 {isBaseline && <span className="text-[9px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded uppercase tracking-wider">Base</span>}
+                              </div>
+                              <div className="text-xs text-slate-500 font-mono mt-1">{r.pattern}</div>
+                           </div>
+                           <div className="text-right">
+                              <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-0.5">Findes</div>
+                              <div className="text-xl font-black text-white flex items-center justify-end">
+                                 {r.weekendStats.fullWeekends}
+                                 {!isBaseline && getDifference(r.weekendStats.fullWeekends, baseline.weekendStats.fullWeekends)}
+                              </div>
+                           </div>
+                        </div>
+
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-3 divide-x divide-slate-700/50 border-b border-slate-700/50">
+                           <div className="p-3 text-center">
+                              <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1 flex justify-center items-center gap-1"><Clock className="w-3 h-3" /> T</span>
+                              <span className="text-sm font-bold text-red-400">
+                                 {r.workDays}
+                              </span>
+                              {!isBaseline && <div className="flex justify-center">{getDifference(r.workDays, baseline.workDays, true)}</div>}
+                           </div>
+                           <div className="p-3 text-center">
+                              <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1 flex justify-center items-center gap-1"><Moon className="w-3 h-3" /> S</span>
+                              <span className="text-sm font-bold text-amber-400">
+                                 {r.salienteDays}
+                              </span>
+                              {!isBaseline && <div className="flex justify-center">{getDifference(r.salienteDays, baseline.salienteDays)}</div>}
+                           </div>
+                           <div className="p-3 text-center">
+                              <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1 flex justify-center items-center gap-1"><Coffee className="w-3 h-3" /> L</span>
+                              <span className="text-sm font-bold text-emerald-400">
+                                 {r.libreDays}
+                              </span>
+                              {!isBaseline && <div className="flex justify-center">{getDifference(r.libreDays, baseline.libreDays)}</div>}
+                           </div>
+                        </div>
+
+                         {/* Secondary Stats */}
+                        <div className="grid grid-cols-2 divide-x divide-slate-700/50 border-b border-slate-700/50 bg-slate-900/20">
+                            <div className="p-3 flex flex-col items-center justify-center">
+                                 <span className="text-[10px] text-slate-500 font-bold uppercase mb-1">Total Descanso</span>
+                                 <span className="text-sm font-medium text-slate-300">
+                                    {r.totalRestDays} d
+                                    {!isBaseline && getDifference(r.totalRestDays, baseline.totalRestDays)}
+                                 </span>
+                            </div>
+                            <div className="p-3 flex justify-center gap-3">
+                               <div className="flex flex-col items-center">
+                                  <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">Sáb+Dom</span>
+                                  <div className="flex items-center gap-1">
+                                      <Sparkles className="w-3 h-3 text-emerald-400" />
+                                      <span className="text-sm font-bold text-emerald-400">{r.weekendStats.cleanWeekends}</span>
+                                  </div>
+                               </div>
+                               <div className="w-px bg-slate-700 h-8 self-center"></div>
+                               <div className="flex flex-col items-center">
+                                  <span className="text-[8px] font-bold text-amber-400 uppercase tracking-wider mb-0.5">Sal+Dom</span>
+                                  <div className="flex items-center gap-1">
+                                      <Sunrise className="w-3 h-3 text-amber-400" />
+                                      <span className="text-sm font-bold text-amber-400">{r.weekendStats.salienteWeekends}</span>
+                                  </div>
+                               </div>
+                            </div>
+                        </div>
+
+                        {/* Toggle Button */}
+                        <div className="p-2 bg-slate-800/80">
+                           <button 
+                             onClick={() => setActiveDetailId(activeDetailId === r.id ? null : r.id)}
+                             className={`w-full text-sm font-bold flex items-center justify-center gap-2 px-3 py-2 rounded-lg border transition-all ${isActive ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'text-slate-400 hover:text-indigo-400 border-transparent hover:bg-slate-700/50'}`}
+                           >
+                             {isActive ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                             {isActive ? 'Ocultar Calendario' : 'Ver Calendario'}
+                           </button>
+                        </div>
+
+                        {/* Details Panel Mobile */}
+                        {isActive && (
+                           <div className="p-4 border-t border-slate-700 bg-slate-950/30">
+                              <div className="mb-4">
+                                  <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-1">Detalle de Fines de Semana</h3>
+                                  <p className="text-[10px] text-slate-500">Calendario completo para <span className="text-indigo-400">{r.rotationName}</span></p>
+                              </div>
+
+                              {/* Mobile Legend */}
+                              <div className="grid grid-cols-1 gap-2 mb-4 text-[10px] bg-slate-900/50 p-2 rounded border border-slate-700/50">
+                                   <div className="flex items-center gap-2">
+                                      <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                      <span className="text-slate-300">L+L (Completo)</span>
+                                   </div>
+                                   <div className="flex items-center gap-2">
+                                      <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                                      <span className="text-slate-300">S+L (Parcial)</span>
+                                   </div>
+                                </div>
+
+                              <div className="grid grid-cols-2 gap-2">
+                                  {r.weekendStats.details.map((w, idx) => (
+                                       <div key={idx} className={`p-2 rounded border flex flex-col gap-1.5 ${w.isFull ? 'bg-indigo-500/10 border-indigo-500/30' : 'bg-slate-800/40 border-slate-700/40 opacity-70'}`}>
+                                          <div className="flex justify-between items-center">
+                                              <span className="text-[10px] font-mono text-slate-400">{w.date}</span>
+                                              {w.isFull && <CheckCircle2 className="w-3 h-3 text-indigo-400" />}
+                                          </div>
+                                          <div className="flex gap-1">
+                                              <div className={`flex-1 text-center py-0.5 rounded text-[9px] font-bold border ${w.saturday === 'L' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : w.saturday === 'S' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+                                                  S: {w.saturday}
+                                              </div>
+                                              <div className={`flex-1 text-center py-0.5 rounded text-[9px] font-bold border ${w.sunday === 'L' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : w.sunday === 'S' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+                                                  D: {w.sunday}
+                                              </div>
+                                          </div>
+                                       </div>
+                                  ))}
+                              </div>
+                           </div>
+                        )}
+                      </div>
+                   )
+                })}
               </div>
             </section>
 
