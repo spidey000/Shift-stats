@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { 
@@ -153,7 +152,7 @@ const App: React.FC = () => {
             <div className="bg-indigo-600 p-2 rounded-lg shadow-lg shadow-indigo-500/20">
               <Calculator className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-white tracking-tight">ShiftAnalyzer <span className="text-indigo-400">Pro</span></h1>
+            <h1 className="text-xl font-bold text-white tracking-tight">Shift <span className="text-indigo-400">Stats</span></h1>
           </div>
           <div className="hidden sm:flex flex-col text-right">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Período</span>
@@ -656,7 +655,7 @@ const App: React.FC = () => {
             <span className="flex items-center gap-2.5 text-emerald-400"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div> Libre (L)</span>
           </div>
           <div className="opacity-40 hover:opacity-100 transition-opacity cursor-default">
-            ShiftAnalyzer v2.0 • 2025
+            Shift Stats v2.0 • 2025
           </div>
         </div>
       </footer>
