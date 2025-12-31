@@ -29,7 +29,11 @@ import {
   Moon,
   Plane,
   Sparkles,
-  Sunrise
+  Sunrise,
+  Star,
+  Users,
+  ShieldCheck,
+  AlertTriangle
 } from 'lucide-react';
 import { RotationConfig, AnalysisResult } from './types';
 import { ShiftRotationAnalyzer } from './logic';
@@ -80,11 +84,11 @@ const Tooltip = ({ content }: { content: string }) => {
 const App: React.FC = () => {
   const [year, setYear] = useState(new Date().getFullYear() + 1);
   const [startDate, setStartDate] = useState(`${new Date().getFullYear() + 1}-01-01`);
-  // Default values updated to intuitive format: Work Days, Total Rest Days
+  // Default values updated to intuitive format: Work Days, Total Rest Days, Nights per cycle
   const [rotations, setRotations] = useState<RotationConfig[]>([
-    { id: '1', name: 'Actual (6-3)', workDays: 6, restDays: 3 },
-    { id: '2', name: 'Opción A (5-3)', workDays: 5, restDays: 3 },
-    { id: '3', name: 'Opción B (6-4)', workDays: 6, restDays: 4 },
+    { id: '1', name: 'Actual (6-3)', workDays: 6, restDays: 3, nights: 2 },
+    { id: '2', name: 'Opción A (5-3)', workDays: 5, restDays: 3, nights: 2 },
+    { id: '3', name: 'Opción B (6-4)', workDays: 6, restDays: 4, nights: 2 },
   ]);
 
   const [activeDetailId, setActiveDetailId] = useState<string | null>(null);
@@ -108,7 +112,7 @@ const App: React.FC = () => {
   const addRotation = () => {
     const newId = Math.random().toString(36).substr(2, 9);
     // Default to a standard 5 work, 3 rest (2 clean) rotation
-    setRotations([...rotations, { id: newId, name: `Nueva ${rotations.length + 1}`, workDays: 5, restDays: 3 }]);
+    setRotations([...rotations, { id: newId, name: `Nueva ${rotations.length + 1}`, workDays: 5, restDays: 3, nights: 0 }]);
   };
 
   const removeRotation = (id: string) => {
@@ -132,7 +136,7 @@ const App: React.FC = () => {
     if (diff === 0) return null;
     
     // Logic: 
-    // If lowerIsBetter (e.g. work days): positive diff is BAD (red), negative diff is GOOD (green)
+    // If lowerIsBetter (e.g. work days, nights, headcount): positive diff is BAD (red), negative diff is GOOD (green)
     // If higherIsBetter (e.g. weekends): positive diff is GOOD (green), negative diff is BAD (red)
     
     const isPositive = diff > 0;
@@ -196,6 +200,25 @@ const App: React.FC = () => {
                   />
                 </div>
               </div>
+
+               {/* Cobertura Requerida Info Box */}
+               <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50 mt-4">
+                 <div className="flex items-center gap-2 mb-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Objetivo de Cobertura</span>
+                 </div>
+                 <div className="flex justify-between items-end">
+                    <div className="text-sm text-slate-400">
+                      Cubrir <span className="text-white font-bold">16 puestos</span> diarios:
+                      <br/>
+                      <span className="text-xs text-slate-500">12 Día + 4 Noche</span>
+                    </div>
+                    <div className="text-right">
+                       <span className="block text-xs text-slate-500 mb-0.5">Vacaciones</span>
+                       <span className="font-bold text-white text-sm">30 días/año</span>
+                    </div>
+                 </div>
+              </div>
             </div>
 
             <div className="lg:w-2/3 space-y-4">
@@ -216,6 +239,7 @@ const App: React.FC = () => {
                 {rotations.map((rotation, index) => {
                   const isWorkValid = !isNaN(rotation.workDays) && rotation.workDays > 0;
                   const isRestValid = !isNaN(rotation.restDays) && rotation.restDays >= 0;
+                  const isNightsValid = !isNaN(rotation.nights) && rotation.nights >= 0 && rotation.nights <= rotation.workDays;
 
                   return (
                     <div key={rotation.id} className="grid grid-cols-12 gap-3 items-start bg-slate-800/50 p-4 rounded-xl border border-slate-700 relative group">
@@ -224,9 +248,11 @@ const App: React.FC = () => {
                            <span className="text-[10px] uppercase font-bold text-slate-500 rotate-270 whitespace-nowrap bg-slate-900 px-2 py-1 rounded border border-slate-800">Referencia</span>
                         </div>
                       )}
-                      <div className="col-span-12 sm:col-span-4">
+                      
+                      {/* Name - 12 cols mobile, 3 cols desktop */}
+                      <div className="col-span-12 lg:col-span-3">
                         <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider">
-                          Nombre <Tooltip content="Identificador para diferenciar opciones en la comparativa." />
+                          Nombre
                         </label>
                         <input 
                           value={rotation.name}
@@ -234,37 +260,52 @@ const App: React.FC = () => {
                           className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm focus:ring-1 focus:ring-indigo-500 outline-none"
                         />
                       </div>
-                      <div className="col-span-5 sm:col-span-3">
-                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider">
-                          Días Trabajo <Tooltip content="Número de días consecutivos que trabajas (Turno)." />
+
+                      {/* Work Days - 4 cols mobile, 3 cols desktop */}
+                      <div className="col-span-4 lg:col-span-3">
+                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider truncate">
+                          Trabajo <Tooltip content="Días seguidos de trabajo." />
                         </label>
                         <input 
                           type="number"
-                          placeholder="Ej: 6"
                           value={isNaN(rotation.workDays) ? "" : rotation.workDays}
                           onChange={(e) => updateRotation(rotation.id, 'workDays', e.target.value)}
                           className={`w-full px-3 py-2 rounded-lg bg-slate-800 border text-white text-sm outline-none transition-all ${isWorkValid ? 'border-slate-700 focus:ring-indigo-500' : 'border-red-500/50 bg-red-500/5 focus:ring-red-500'}`}
                         />
-                        {!isWorkValid && <p className="text-[10px] text-red-400 font-medium mt-1">Obligatorio</p>}
                       </div>
-                      <div className="col-span-5 sm:col-span-3">
-                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider">
-                          Días Libres (Total) <Tooltip content="Total de días de descanso. El sistema cuenta el primero como 'Saliente' y los restantes como 'Libres'." />
+
+                      {/* Nights - 4 cols mobile, 3 cols desktop */}
+                      <div className="col-span-4 lg:col-span-3">
+                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider truncate">
+                          Noches <Tooltip content="Noches dentro de los días de trabajo." />
                         </label>
                         <input 
                           type="number"
-                          placeholder="Ej: 3"
+                          value={isNaN(rotation.nights) ? "" : rotation.nights}
+                          onChange={(e) => updateRotation(rotation.id, 'nights', e.target.value)}
+                          className={`w-full px-3 py-2 rounded-lg bg-slate-800 border text-white text-sm outline-none transition-all ${isNightsValid ? 'border-slate-700 focus:ring-indigo-500' : 'border-red-500/50 bg-red-500/5 focus:ring-red-500'}`}
+                        />
+                      </div>
+
+                      {/* Rest Days - 4 cols mobile, 2 cols desktop */}
+                      <div className="col-span-4 lg:col-span-2">
+                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider truncate">
+                          Descanso <Tooltip content="Total días libres." />
+                        </label>
+                        <input 
+                          type="number"
                           value={isNaN(rotation.restDays) ? "" : rotation.restDays}
                           onChange={(e) => updateRotation(rotation.id, 'restDays', e.target.value)}
                           className={`w-full px-3 py-2 rounded-lg bg-slate-800 border text-white text-sm outline-none transition-all ${isRestValid ? 'border-slate-700 focus:ring-indigo-500' : 'border-red-500/50 bg-red-500/5 focus:ring-red-500'}`}
                         />
-                        {!isRestValid && <p className="text-[10px] text-red-400 font-medium mt-1">Obligatorio</p>}
                       </div>
-                      <div className="col-span-2 sm:col-span-2 flex justify-end pt-5">
+
+                      {/* Delete Button - Absolute positioned or in column */}
+                      <div className="col-span-12 lg:col-span-1 flex justify-end lg:pt-7">
                         <button 
                           onClick={() => removeRotation(rotation.id)}
                           disabled={rotations.length <= 1}
-                          className="p-2 text-slate-500 hover:text-red-400 disabled:opacity-20 transition-colors"
+                          className="p-2 text-slate-500 hover:text-red-400 disabled:opacity-20 transition-colors w-full lg:w-auto flex justify-center bg-slate-800 lg:bg-transparent rounded-lg lg:rounded-none border border-slate-700 lg:border-none"
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
@@ -301,9 +342,9 @@ const App: React.FC = () => {
                       </div>
                       <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-3 text-center">
                         <span className="block text-indigo-200 text-[10px] font-bold uppercase tracking-widest mb-1">
-                          Saliente (S) <Tooltip content="Días de salida de turno (cuentan como descanso pero no son días libres completos)." />
+                          Noches (N) <Tooltip content="Total noches trabajadas al año." />
                         </span>
-                        <span className="text-2xl font-black">{bestRotation.salienteDays}</span>
+                        <span className="text-2xl font-black">{bestRotation.totalNights}</span>
                       </div>
                       <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-3 text-center">
                         <span className="block text-indigo-200 text-[10px] font-bold uppercase tracking-widest mb-1">
@@ -402,8 +443,9 @@ const App: React.FC = () => {
                       }}
                     />
                     <Legend verticalAlign="top" height={36} iconType="circle"/>
-                    <Bar name="Findes Libres (Total)" dataKey="weekendStats.fullWeekends" fill="#6366f1" radius={[6, 6, 0, 0]} />
+                    <Bar name="Findes Libres" dataKey="weekendStats.fullWeekends" fill="#6366f1" radius={[6, 6, 0, 0]} />
                     <Bar name="Días Libres" dataKey="libreDays" fill="#10b981" radius={[6, 6, 0, 0]} />
+                    <Bar name="Noches Totales" dataKey="totalNights" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -428,13 +470,16 @@ const App: React.FC = () => {
                         Trabajo (T) <Tooltip content="Días totales de trabajo al año." />
                       </th>
                       <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
+                         Plantilla Min. <Tooltip content="Personas necesarias. Se calcula tomando el mayor de: a) Gente para volumen (16 puestos) o b) Gente para cubrir noches (4 puestos)." />
+                      </th>
+                       <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
+                        Noches (N) <Tooltip content="Total noches anuales." />
+                      </th>
+                      <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
                         Saliente (S) <Tooltip content="Días de salida de turno." />
                       </th>
                       <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
                         Libre (L) <Tooltip content="Días completamente libres." />
-                      </th>
-                      <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
-                        Total Descanso <Tooltip content="Suma de días Saliente y días Libres." />
                       </th>
                       <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
                         Findes Full <Tooltip content="Fines de semana con Sábado y Domingo sin trabajo (L+L o S+L)." />
@@ -447,6 +492,8 @@ const App: React.FC = () => {
                        const baseline = results[0];
                        const isBaseline = index === 0;
                        const isActive = activeDetailId === r.id;
+                       const limitingIsNights = r.staffing.limitingFactor === 'nights';
+                       const isImpossible = r.staffing.limitingFactor === 'impossible';
 
                        return (
                       <React.Fragment key={r.id}>
@@ -464,6 +511,36 @@ const App: React.FC = () => {
                           </span>
                           {!isBaseline && getDifference(r.workDays, baseline.workDays, true)}
                         </td>
+                         <td className="px-6 py-5 text-center">
+                          <span className={`inline-flex items-center gap-1.5 font-bold px-3 py-1.5 rounded-xl border ${isImpossible ? 'text-slate-400 bg-slate-800 border-slate-700' : 'text-blue-400 bg-blue-400/10 border-blue-400/20'}`}>
+                            {isImpossible ? (
+                                <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                            ) : limitingIsNights ? (
+                                <div className="relative">
+                                  <Users className="w-3.5 h-3.5" />
+                                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-violet-500 rounded-full border border-slate-900" title="Limitado por Noches"></div>
+                                </div>
+                            ) : (
+                                <Users className="w-3.5 h-3.5" />
+                            )}
+                            
+                            {isImpossible ? 'N/A' : r.staffing.requiredHeadcount}
+                          </span>
+                          {!isBaseline && !isImpossible && getDifference(r.staffing.requiredHeadcount, baseline.staffing.requiredHeadcount, true)}
+                          
+                          {limitingIsNights && (
+                             <div className="text-[9px] text-violet-400 mt-1 font-medium">Faltan Noches</div>
+                          )}
+                          {isImpossible && (
+                             <div className="text-[9px] text-amber-500 mt-1 font-medium">Sin noches</div>
+                          )}
+                        </td>
+                        <td className="px-6 py-5 text-center">
+                          <span className="inline-flex items-center gap-1.5 font-bold text-violet-400 bg-violet-400/10 px-3 py-1.5 rounded-xl border border-violet-400/20">
+                            <Star className="w-3.5 h-3.5" /> {r.totalNights}
+                          </span>
+                          {!isBaseline && getDifference(r.totalNights, baseline.totalNights, true)}
+                        </td>
                         <td className="px-6 py-5 text-center">
                           <span className="inline-flex items-center gap-1.5 font-bold text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-xl border border-amber-400/20">
                             <Moon className="w-3.5 h-3.5" /> {r.salienteDays}
@@ -475,10 +552,6 @@ const App: React.FC = () => {
                             <Coffee className="w-3.5 h-3.5" /> {r.libreDays}
                           </span>
                           {!isBaseline && getDifference(r.libreDays, baseline.libreDays)}
-                        </td>
-                        <td className="px-6 py-5 text-center font-medium text-slate-400">
-                          {r.totalRestDays} días
-                          {!isBaseline && getDifference(r.totalRestDays, baseline.totalRestDays)}
                         </td>
                         <td className="px-6 py-5 text-center">
                             <div className="flex flex-col items-center justify-center">
@@ -517,7 +590,7 @@ const App: React.FC = () => {
                       </tr>
                       {isActive && (
                         <tr>
-                          <td colSpan={7} className="p-0 border-b border-slate-800">
+                          <td colSpan={8} className="p-0 border-b border-slate-800">
                              <div className="bg-slate-950/30 p-6 shadow-[inset_0_4px_10px_rgba(0,0,0,0.2)] animate-in fade-in slide-in-from-top-2 duration-300">
                                 <div className="flex items-center gap-3 mb-4">
                                      <div className="bg-indigo-500/20 p-2 rounded-lg">
@@ -579,6 +652,8 @@ const App: React.FC = () => {
                    const baseline = results[0];
                    const isBaseline = index === 0;
                    const isActive = activeDetailId === r.id;
+                   const limitingIsNights = r.staffing.limitingFactor === 'nights';
+                   const isImpossible = r.staffing.limitingFactor === 'impossible';
 
                    return (
                       <div key={r.id} className="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden">
@@ -590,6 +665,14 @@ const App: React.FC = () => {
                                  {isBaseline && <span className="text-[9px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded uppercase tracking-wider">Base</span>}
                               </div>
                               <div className="text-xs text-slate-500 font-mono mt-1">{r.pattern}</div>
+                              <div className="flex items-center gap-2 mt-2">
+                                 <span className={`text-xs font-bold px-2 py-1 rounded flex items-center gap-1 ${isImpossible ? 'text-slate-300 bg-slate-700' : 'text-blue-400 bg-blue-400/10'}`}>
+                                    {isImpossible ? <AlertTriangle className="w-3 h-3 text-amber-500"/> : <Users className="w-3 h-3" />}
+                                    {isImpossible ? 'N/A' : `${r.staffing.requiredHeadcount} personas`}
+                                 </span>
+                                 {limitingIsNights && <span className="text-[9px] text-violet-400 font-medium bg-violet-400/10 px-1.5 py-0.5 rounded border border-violet-400/20">Faltan Noches</span>}
+                                 {isImpossible && <span className="text-[9px] text-amber-500 font-medium bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">Sin noches</span>}
+                              </div>
                            </div>
                            <div className="text-right">
                               <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-0.5">Findes</div>
@@ -601,13 +684,20 @@ const App: React.FC = () => {
                         </div>
 
                         {/* Stats Grid */}
-                        <div className="grid grid-cols-3 divide-x divide-slate-700/50 border-b border-slate-700/50">
+                        <div className="grid grid-cols-4 divide-x divide-slate-700/50 border-b border-slate-700/50">
                            <div className="p-3 text-center">
                               <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1 flex justify-center items-center gap-1"><Clock className="w-3 h-3" /> T</span>
                               <span className="text-sm font-bold text-red-400">
                                  {r.workDays}
                               </span>
                               {!isBaseline && <div className="flex justify-center">{getDifference(r.workDays, baseline.workDays, true)}</div>}
+                           </div>
+                           <div className="p-3 text-center">
+                              <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1 flex justify-center items-center gap-1"><Star className="w-3 h-3" /> N</span>
+                              <span className="text-sm font-bold text-violet-400">
+                                 {r.totalNights}
+                              </span>
+                              {!isBaseline && <div className="flex justify-center">{getDifference(r.totalNights, baseline.totalNights, true)}</div>}
                            </div>
                            <div className="p-3 text-center">
                               <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1 flex justify-center items-center gap-1"><Moon className="w-3 h-3" /> S</span>
@@ -790,6 +880,8 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-6 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
           <div className="flex flex-wrap justify-center gap-8">
             <span className="flex items-center gap-2.5 text-red-400"><div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"></div> Trabajo (T)</span>
+            <span className="flex items-center gap-2.5 text-blue-400"><div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]"></div> Plantilla</span>
+            <span className="flex items-center gap-2.5 text-violet-400"><div className="w-2.5 h-2.5 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.4)]"></div> Noches (N)</span>
             <span className="flex items-center gap-2.5 text-amber-400"><div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]"></div> Saliente (S)</span>
             <span className="flex items-center gap-2.5 text-emerald-400"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div> Libre (L)</span>
           </div>

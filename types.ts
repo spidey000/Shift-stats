@@ -22,6 +22,7 @@ export interface RotationConfig {
   name: string;
   workDays: number;
   restDays: number;
+  nights: number;
 }
 
 export interface AnalysisResult {
@@ -33,6 +34,7 @@ export interface AnalysisResult {
   salienteDays: number;
   libreDays: number;
   totalRestDays: number;
+  totalNights: number;
   weekendStats: WeekendStats;
   vacationAnalysis: {
     prev: number;
@@ -40,5 +42,13 @@ export interface AnalysisResult {
     post: number;
     total: number;
     factor: number;
+  };
+  staffing: {
+    requiredHeadcount: number;
+    limitingFactor: 'volume' | 'nights' | 'impossible';
+    minStaffForVolume: number;
+    minStaffForNights: number;
+    effectiveWorkDays: number;
+    effectiveNightsPerYear: number;
   };
 }

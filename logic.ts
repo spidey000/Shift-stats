@@ -21,16 +21,12 @@ export class ShiftRotationAnalyzer {
   generateRotationCalendar(workDays: number, restDays: number): { date: Date; status: ShiftStatus }[] {
     const calendar: { date: Date; status: ShiftStatus }[] = [];
     
-    // Safety check for invalid inputs that could cause RangeError: Invalid array length
+    // Safety check for invalid inputs
     const safeWorkDays = Math.max(0, isNaN(workDays) ? 0 : Math.floor(workDays));
     const safeRestDays = Math.max(0, isNaN(restDays) ? 0 : Math.floor(restDays));
     
     let currentDate = new Date(this.startDate);
 
-    // Logic Update: User inputs TOTAL rest days. 
-    // The first rest day is 'S' (Saliente), the remaining are 'L' (Libre).
-    // If restDays is 0, no rest. If restDays is 1, only 'S'.
-    
     const cleanRestDays = Math.max(0, safeRestDays - 1);
     const hasSaliente = safeRestDays > 0;
 
@@ -131,22 +127,87 @@ export class ShiftRotationAnalyzer {
     const salienteCount = calendar.filter(c => c.status === 'S').length;
     const libreCount = calendar.filter(c => c.status === 'L').length;
 
-    // Cycle length is simply Work + Rest (since Rest includes Saliente inside logic now)
+    // Cycle length
     const cycleLength = (config.workDays || 0) + (config.restDays || 0);
 
-    // Vacation Analysis
-    // Logic: Taking the work block (workDays) as vacation connects the previous rest block and the next rest block.
-    // config.restDays is now the total rest block size.
-    
+    // --- NIGHTS CALCULATION (Display only) ---
+    const nightsPerCycle = config.nights || 0;
+    const workDaysPerCycle = config.workDays || 0;
+    const totalNights = (workDaysPerCycle > 0) 
+      ? Math.round(workCount * (nightsPerCycle / workDaysPerCycle))
+      : 0;
+
+    // --- VACATION ANALYSIS ---
     const vac = config.workDays || 0;
     const prev = config.restDays || 0;
     const post = config.restDays || 0;
     const total = prev + vac + post;
     const factor = vac > 0 ? total / vac : 0;
 
-    // Pattern string reconstruction for display: e.g. "6-S-2" if input was 6 work 3 rest
+    // --- ADVANCED STAFFING CALCULATION ---
+    // Constraints:
+    // 1. Total Posts = 16 (12 Day + 4 Night)
+    // 2. Night Posts = 4 (Must be covered specifically)
+    // 3. Vacation = 30 days/year (Calendar days availability = 365 - 30 = 335)
+    
+    const REQUIRED_NIGHT_POSTS = 4;
+    const REQUIRED_DAY_POSTS = 12;
+    const TOTAL_POSTS = REQUIRED_DAY_POSTS + REQUIRED_NIGHT_POSTS; // 16
+    const CALENDAR_DAYS = 365;
+    const VACATION_DAYS = 30;
+    const AVAILABLE_DAYS = CALENDAR_DAYS - VACATION_DAYS; // 335 effective days per person/year
+
+    // Annual Demand (Shifts)
+    const demandTotalShifts = TOTAL_POSTS * CALENDAR_DAYS; // 16 * 365 = 5840
+    const demandNightShifts = REQUIRED_NIGHT_POSTS * CALENDAR_DAYS; // 4 * 365 = 1460
+
+    // Individual Capacity (Shifts per person per year)
+    // How many full cycles can a person do in 335 days?
+    const cyclesPerPersonYear = cycleLength > 0 ? AVAILABLE_DAYS / cycleLength : 0;
+    
+    // Effective shifts a person contributes annually
+    const effectiveWorkDaysPerPerson = cyclesPerPersonYear * workDaysPerCycle;
+    const effectiveNightsPerPerson = cyclesPerPersonYear * nightsPerCycle;
+
+    // 1. Headcount needed for TOTAL VOLUME (Volume Constraint)
+    let minStaffForVolume = 0;
+    if (effectiveWorkDaysPerPerson > 0) {
+        minStaffForVolume = demandTotalShifts / effectiveWorkDaysPerPerson;
+    }
+
+    // 2. Headcount needed for NIGHT COVERAGE (Structural Constraint)
+    let minStaffForNights = 0;
+    if (nightsPerCycle === 0) {
+        // Impossible to cover nights if the rotation has 0 nights
+        minStaffForNights = Infinity; 
+    } else {
+        minStaffForNights = demandNightShifts / effectiveNightsPerPerson;
+    }
+
+    // Final Determination
+    let requiredHeadcount = 0;
+    let limitingFactor: 'volume' | 'nights' | 'impossible' = 'volume';
+
+    if (minStaffForNights === Infinity) {
+        limitingFactor = 'impossible';
+        requiredHeadcount = 0;
+    } else {
+        // We need the maximum of the two constraints to satisfy BOTH.
+        // If we have enough for volume but not for nights, we must hire more to cover nights (and have excess day capacity).
+        // If we have enough for nights but not volume, we must hire more for volume (days).
+        
+        if (minStaffForNights > minStaffForVolume) {
+            limitingFactor = 'nights';
+            requiredHeadcount = Math.ceil(minStaffForNights);
+        } else {
+            limitingFactor = 'volume';
+            requiredHeadcount = Math.ceil(minStaffForVolume);
+        }
+    }
+
+    // Pattern string reconstruction
     const cleanRestDisplay = Math.max(0, (config.restDays || 0) - 1);
-    const patternStr = `${config.workDays || 0}-S-${cleanRestDisplay}`;
+    const patternStr = `${config.workDays || 0} (${nightsPerCycle}N) - S - ${cleanRestDisplay}`;
 
     return {
       id: config.id,
@@ -157,9 +218,18 @@ export class ShiftRotationAnalyzer {
       salienteDays: salienteCount,
       libreDays: libreCount,
       totalRestDays: salienteCount + libreCount,
+      totalNights,
       weekendStats,
       vacationAnalysis: {
         prev, vac, post, total, factor
+      },
+      staffing: {
+        requiredHeadcount,
+        limitingFactor,
+        minStaffForVolume: Math.ceil(minStaffForVolume),
+        minStaffForNights: minStaffForNights === Infinity ? 0 : Math.ceil(minStaffForNights),
+        effectiveWorkDays: Math.floor(effectiveWorkDaysPerPerson),
+        effectiveNightsPerYear: Math.floor(effectiveNightsPerPerson)
       }
     };
   }
