@@ -106,7 +106,7 @@ const MathExplanation = () => {
              
              {isOpen && (
                 <div className="px-6 pb-8 pt-2 animate-in slide-in-from-top-2 fade-in duration-300 border-t border-slate-800/50">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm text-slate-400 mt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 min-[1440px]:grid-cols-4 gap-6 text-sm text-slate-400 mt-4">
                         
                         {/* Box 1 */}
                         <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
@@ -277,7 +277,7 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 pb-40 md:pb-24 selection:bg-indigo-500/30">
       <header className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="bg-indigo-600 p-2 rounded-lg shadow-lg shadow-indigo-500/20">
               <Calculator className="w-5 h-5 text-white" />
@@ -291,12 +291,12 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
         {/* Panel de Configuración */}
         <section className="bg-slate-900 rounded-2xl shadow-xl border border-slate-800 p-6">
-          <div className="flex flex-col lg:flex-row gap-8">
-            <div className="lg:w-1/3 space-y-6">
+          <div className="flex flex-col min-[1440px]:flex-row gap-8">
+            <div className="min-[1440px]:w-1/3 space-y-6">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-5 h-5 text-indigo-400" />
                 <h2 className="text-lg font-semibold text-white">Configuración General</h2>
@@ -346,7 +346,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className="lg:w-2/3 space-y-4">
+            <div className="min-[1440px]:w-2/3 space-y-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Briefcase className="w-5 h-5 text-indigo-400" />
@@ -360,82 +360,76 @@ const App: React.FC = () => {
                 </button>
               </div>
               
-              <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 min-[1440px]:grid-cols-4 gap-4">
                 {rotations.map((rotation, index) => {
                   const isWorkValid = !isNaN(rotation.workDays) && rotation.workDays > 0;
                   const isRestValid = !isNaN(rotation.restDays) && rotation.restDays >= 0;
                   const isNightsValid = !isNaN(rotation.nights) && rotation.nights >= 0 && rotation.nights <= rotation.workDays;
 
                   return (
-                    <div key={rotation.id} className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 relative group flex flex-col gap-4">
-                      {index === 0 && (
-                         <div className="absolute top-2 right-2">
-                            <span className="text-[9px] uppercase font-bold text-slate-300 bg-slate-700 px-2 py-0.5 rounded border border-slate-600">Referencia</span>
+                    <div key={rotation.id} className="bg-slate-800/50 p-3 rounded-xl border border-slate-700 relative group">
+                      {/* Header Row: Name + Delete */}
+                      <div className="flex items-end gap-2 mb-3">
+                         <div className="flex-1 relative">
+                             {index === 0 && (
+                                <span className="absolute -top-1.5 right-0 text-[8px] uppercase font-bold text-slate-300 bg-slate-700 px-1.5 py-0.5 rounded border border-slate-600">Ref</span>
+                             )}
+                            <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider">
+                              Nombre
+                            </label>
+                            <input 
+                              value={rotation.name}
+                              onChange={(e) => updateRotation(rotation.id, 'name', e.target.value)}
+                              className="w-full px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm focus:ring-1 focus:ring-indigo-500 outline-none"
+                            />
                          </div>
-                      )}
-                      
-                      {/* Name */}
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider">
-                          Nombre
-                        </label>
-                        <input 
-                          value={rotation.name}
-                          onChange={(e) => updateRotation(rotation.id, 'name', e.target.value)}
-                          className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm focus:ring-1 focus:ring-indigo-500 outline-none"
-                        />
+                         <button 
+                            onClick={() => removeRotation(rotation.id)}
+                            disabled={rotations.length <= 1}
+                            className="flex-none mb-[1px] p-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+                            title="Eliminar rotación"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
-                          {/* Work Days */}
-                          <div>
-                            <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider truncate">
-                              Trabajo <Tooltip content="Días seguidos de trabajo." />
+                      {/* Inputs Row */}
+                      <div className="flex gap-2">
+                          <div className="flex-1">
+                            <label className="block text-[9px] uppercase font-bold text-slate-500 mb-1 tracking-wider truncate text-center">
+                              Trabajo
                             </label>
                             <input 
                               type="number"
                               value={isNaN(rotation.workDays) ? "" : rotation.workDays}
                               onChange={(e) => updateRotation(rotation.id, 'workDays', e.target.value)}
-                              className={`w-full px-3 py-2 rounded-lg bg-slate-800 border text-white text-sm outline-none transition-all ${isWorkValid ? 'border-slate-700 focus:ring-indigo-500' : 'border-red-500/50 bg-red-500/5 focus:ring-red-500'}`}
+                              className={`w-full px-2 py-1.5 rounded-lg bg-slate-800 border text-white text-sm outline-none text-center transition-all ${isWorkValid ? 'border-slate-700 focus:ring-indigo-500' : 'border-red-500/50 bg-red-500/5 focus:ring-red-500'}`}
                             />
                           </div>
 
-                          {/* Nights */}
-                          <div>
-                            <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider truncate">
-                              Noches <Tooltip content="Noches dentro de los días de trabajo." />
+                          <div className="flex-1">
+                            <label className="block text-[9px] uppercase font-bold text-slate-500 mb-1 tracking-wider truncate text-center">
+                              Noches
                             </label>
                             <input 
                               type="number"
                               value={isNaN(rotation.nights) ? "" : rotation.nights}
                               onChange={(e) => updateRotation(rotation.id, 'nights', e.target.value)}
-                              className={`w-full px-3 py-2 rounded-lg bg-slate-800 border text-white text-sm outline-none transition-all ${isNightsValid ? 'border-slate-700 focus:ring-indigo-500' : 'border-red-500/50 bg-red-500/5 focus:ring-red-500'}`}
+                              className={`w-full px-2 py-1.5 rounded-lg bg-slate-800 border text-white text-sm outline-none text-center transition-all ${isNightsValid ? 'border-slate-700 focus:ring-indigo-500' : 'border-red-500/50 bg-red-500/5 focus:ring-red-500'}`}
                             />
                           </div>
-                      </div>
 
-                      {/* Rest Days */}
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider truncate">
-                          Descanso <Tooltip content="Total días libres." />
-                        </label>
-                        <input 
-                          type="number"
-                          value={isNaN(rotation.restDays) ? "" : rotation.restDays}
-                          onChange={(e) => updateRotation(rotation.id, 'restDays', e.target.value)}
-                          className={`w-full px-3 py-2 rounded-lg bg-slate-800 border text-white text-sm outline-none transition-all ${isRestValid ? 'border-slate-700 focus:ring-indigo-500' : 'border-red-500/50 bg-red-500/5 focus:ring-red-500'}`}
-                        />
-                      </div>
-
-                      {/* Delete Button */}
-                      <div className="mt-auto pt-2">
-                        <button 
-                          onClick={() => removeRotation(rotation.id)}
-                          disabled={rotations.length <= 1}
-                          className="p-2 text-slate-500 hover:text-red-400 disabled:opacity-20 transition-colors w-full flex justify-center bg-slate-800 rounded-lg border border-slate-700"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
+                          <div className="flex-1">
+                            <label className="block text-[9px] uppercase font-bold text-slate-500 mb-1 tracking-wider truncate text-center">
+                              Descanso
+                            </label>
+                            <input 
+                              type="number"
+                              value={isNaN(rotation.restDays) ? "" : rotation.restDays}
+                              onChange={(e) => updateRotation(rotation.id, 'restDays', e.target.value)}
+                              className={`w-full px-2 py-1.5 rounded-lg bg-slate-800 border text-white text-sm outline-none text-center transition-all ${isRestValid ? 'border-slate-700 focus:ring-indigo-500' : 'border-red-500/50 bg-red-500/5 focus:ring-red-500'}`}
+                            />
+                          </div>
                       </div>
                     </div>
                   );
@@ -448,9 +442,9 @@ const App: React.FC = () => {
         {results.length > 0 ? (
           <>
             {/* Tarjetas de Resumen y Recomendación */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 min-[1440px]:grid-cols-3 gap-6">
               {bestRotation && (
-                <div className="lg:col-span-2 bg-gradient-to-br from-indigo-600 to-violet-700 rounded-2xl shadow-xl p-8 text-white relative overflow-hidden">
+                <div className="min-[1440px]:col-span-2 bg-gradient-to-br from-indigo-600 to-violet-700 rounded-2xl shadow-xl p-8 text-white relative overflow-hidden">
                   <div className="relative z-10">
                     <div className="flex items-center gap-2 mb-4">
                       <Award className="w-8 h-8 text-yellow-400" />
@@ -585,7 +579,7 @@ const App: React.FC = () => {
                 <span className="text-xs font-bold text-slate-500 bg-slate-800 px-3 py-1 rounded-full uppercase tracking-widest">Año {year}</span>
               </div>
               
-              <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="p-4 grid grid-cols-1 md:grid-cols-2 min-[1440px]:grid-cols-3 gap-6">
                 {results.map((r, index) => {
                    const baseline = results[0];
                    const isBaseline = index === 0;
@@ -750,51 +744,44 @@ const App: React.FC = () => {
                  </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 min-[1440px]:grid-cols-3 gap-6">
                 {results.map(r => (
                   <div key={r.id} className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700 hover:border-indigo-500/30 transition-all">
-                     <h4 className="text-lg font-bold text-white mb-6 flex justify-between items-center">
-                        {r.rotationName}
-                        <span className="text-[10px] bg-slate-800 px-2 py-1 rounded text-slate-400 border border-slate-700">{r.pattern}</span>
-                     </h4>
-                     <div className="space-y-4 relative">
-                       {/* Connection Line */}
-                       <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-slate-700 -z-10"></div>
-                       
-                       <div className="flex justify-between items-center text-sm">
-                         <div className="flex items-center gap-3">
-                            <div className="w-4 h-4 rounded-full bg-slate-700 border-2 border-slate-600"></div>
-                            <span className="text-slate-400 font-medium">Descanso Previo <Tooltip content="Días libres que ya te correspondían antes de las vacaciones." /></span>
-                         </div>
-                         <span className="font-bold text-indigo-400">+{r.vacationAnalysis.prev} días</span>
-                       </div>
-                       <div className="flex justify-between items-center text-sm">
-                         <div className="flex items-center gap-3">
-                            <div className="w-4 h-4 rounded-full bg-indigo-500 border-2 border-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
-                            <span className="text-white font-bold">Tus Vacaciones <Tooltip content="Días de vacaciones solicitados (equivalentes al turno de trabajo)." /></span>
-                         </div>
-                         <span className="font-bold text-white bg-indigo-500/20 px-2 py-0.5 rounded border border-indigo-500/30">{r.vacationAnalysis.vac} días</span>
-                       </div>
-                       <div className="flex justify-between items-center text-sm">
-                         <div className="flex items-center gap-3">
-                            <div className="w-4 h-4 rounded-full bg-slate-700 border-2 border-slate-600"></div>
-                            <span className="text-slate-400 font-medium">Descanso Post <Tooltip content="Días libres que te corresponden después de las vacaciones." /></span>
-                         </div>
-                         <span className="font-bold text-indigo-400">+{r.vacationAnalysis.post} días</span>
-                       </div>
+                     <div className="flex justify-between items-center mb-6">
+                         <h4 className="text-lg font-bold text-white">{r.rotationName}</h4>
+                         <span className="text-[10px] bg-slate-800 px-2 py-1 rounded text-slate-400 border border-slate-700">{r.pattern}</span>
                      </div>
                      
-                     <div className="mt-6 pt-4 border-t border-slate-700 flex justify-between items-center">
-                         <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider flex items-center">
-                           Total Consecutivo <Tooltip content="Días totales fuera del trabajo." />
+                     <div className="flex items-center justify-between text-center gap-2 bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 relative overflow-hidden">
+                        {/* Connecting line visual in background */}
+                        <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-slate-700 -z-10 -translate-y-1/2 opacity-30"></div>
+
+                         <div className="flex flex-col items-center relative bg-slate-900/80 px-1 rounded">
+                            <span className="text-[10px] text-slate-500 font-bold uppercase mb-1">Previo</span>
+                            <span className="font-bold text-indigo-400 text-lg">+{r.vacationAnalysis.prev}</span>
                          </div>
-                         <div className="text-right">
-                            <span className="block text-2xl font-black text-white">{r.vacationAnalysis.total} días</span>
-                            <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest bg-emerald-400/10 px-1.5 py-0.5 rounded mt-1 inline-flex items-center gap-1">
-                               Factor x{r.vacationAnalysis.factor.toFixed(2)} <Tooltip content="Ratio de días libres totales por cada día gastado (aplicable solo al solicitar el ciclo completo)." />
-                            </span>
+                         <div className="text-slate-600 text-sm font-light">+</div>
+                         <div className="flex flex-col items-center relative bg-slate-900/80 px-1 rounded">
+                            <span className="text-[10px] text-slate-500 font-bold uppercase mb-1">Vacaciones</span>
+                            <span className="font-bold text-white bg-indigo-500/20 px-2 py-0.5 rounded border border-indigo-500/30 text-lg">{r.vacationAnalysis.vac}</span>
                          </div>
-                       </div>
+                         <div className="text-slate-600 text-sm font-light">+</div>
+                         <div className="flex flex-col items-center relative bg-slate-900/80 px-1 rounded">
+                            <span className="text-[10px] text-slate-500 font-bold uppercase mb-1">Post</span>
+                            <span className="font-bold text-indigo-400 text-lg">+{r.vacationAnalysis.post}</span>
+                         </div>
+                         <div className="text-slate-600 text-sm font-light">=</div>
+                         <div className="flex flex-col items-center relative bg-slate-900/80 px-1 rounded">
+                            <span className="text-[10px] text-emerald-400 font-bold uppercase mb-1">Total</span>
+                            <span className="font-black text-2xl text-white">{r.vacationAnalysis.total}</span>
+                         </div>
+                     </div>
+                     
+                     <div className="mt-4 flex justify-end">
+                        <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest bg-emerald-400/10 px-2 py-1 rounded inline-flex items-center gap-1">
+                           Factor x{r.vacationAnalysis.factor.toFixed(2)} <Tooltip content="Ratio de días libres totales por cada día gastado (aplicable solo al solicitar el ciclo completo)." />
+                        </span>
+                     </div>
                   </div>
                 ))}
               </div>
@@ -818,7 +805,7 @@ const App: React.FC = () => {
       </main>
 
       <footer className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-800 py-5 z-40">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-6 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
+        <div className="max-w-[1440px] mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-6 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
           <div className="flex flex-wrap justify-center gap-8">
             <span className="flex items-center gap-2.5 text-red-400"><div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"></div> Trabajo</span>
             <span className="flex items-center gap-2.5 text-blue-400"><div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]"></div> Plantilla</span>
