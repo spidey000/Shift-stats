@@ -463,19 +463,19 @@ const App: React.FC = () => {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-3 text-center">
                         <span className="block text-indigo-200 text-[10px] font-bold uppercase tracking-widest mb-1">
-                          Trabajo (T) <Tooltip content="Días totales trabajados al año." />
+                          Trabajo <Tooltip content="Días totales trabajados al año." />
                         </span>
                         <span className="text-2xl font-black">{bestRotation.workDays}</span>
                       </div>
                       <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-3 text-center">
                         <span className="block text-indigo-200 text-[10px] font-bold uppercase tracking-widest mb-1">
-                          Noches (N) <Tooltip content="Total noches trabajadas al año." />
+                          Noches <Tooltip content="Total noches trabajadas al año." />
                         </span>
                         <span className="text-2xl font-black">{bestRotation.totalNights}</span>
                       </div>
                       <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-3 text-center">
                         <span className="block text-indigo-200 text-[10px] font-bold uppercase tracking-widest mb-1">
-                          Libre (L) <Tooltip content="Días de descanso completo (24h)." />
+                          Libre <Tooltip content="Días de descanso completo (24h)." />
                         </span>
                         <span className="text-2xl font-black">{bestRotation.libreDays}</span>
                       </div>
@@ -506,13 +506,13 @@ const App: React.FC = () => {
                 <div className="mb-5 bg-slate-800/50 p-3 rounded-xl border border-slate-700/50 space-y-2">
                    <div className="flex justify-between items-center text-xs">
                       <span className="text-emerald-400 font-bold flex items-center gap-1.5">
-                        <Sparkles className="w-3 h-3" /> L+L (Completo)
+                        <Sparkles className="w-3 h-3" /> Libre + Libre (Completo)
                       </span>
                       <span className="text-slate-400">Sábado y Domingo Libres</span>
                    </div>
                    <div className="flex justify-between items-center text-xs border-t border-slate-700/50 pt-2">
                       <span className="text-amber-400 font-bold flex items-center gap-1.5">
-                        <Sunrise className="w-3 h-3" /> S+L (Parcial)
+                        <Sunrise className="w-3 h-3" /> Saliente + Libre (Parcial)
                       </span>
                       <span className="text-slate-400">Sáb. Saliente + Dom. Libre</span>
                    </div>
@@ -543,8 +543,8 @@ const App: React.FC = () => {
                 <TrendingUp className="w-6 h-6 text-indigo-400" />
                 <h2 className="text-2xl font-bold text-white">Comparativa Visual</h2>
               </div>
-              <div className="h-[350px]">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="h-[350px] w-full">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                   <BarChart data={results} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
                     <XAxis 
@@ -608,8 +608,8 @@ const App: React.FC = () => {
                                     {isImpossible ? <AlertTriangle className="w-3 h-3 text-amber-500"/> : <Users className="w-3 h-3" />}
                                     {isImpossible ? 'N/A' : `${r.staffing.requiredHeadcount} personas`}
                                  </span>
-                                 {limitingIsNights && <span className="text-[9px] text-violet-400 font-medium bg-violet-400/10 px-1.5 py-0.5 rounded border border-violet-400/20">Faltan Noches</span>}
-                                 {isImpossible && <span className="text-[9px] text-amber-500 font-medium bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">Sin noches</span>}
+                                 {limitingIsNights && <span className="text-[9px] text-violet-400 font-medium bg-violet-400/10 px-1.5 py-0.5 rounded border border-violet-400/20">Limitado por Noches</span>}
+                                 {isImpossible && <span className="text-[9px] text-amber-500 font-medium bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">Imposible (0 Noches)</span>}
                               </div>
                            </div>
                            <div className="text-right">
@@ -624,28 +624,28 @@ const App: React.FC = () => {
                         {/* Stats Grid */}
                         <div className="grid grid-cols-4 divide-x divide-slate-700/50 border-b border-slate-700/50">
                            <div className="p-3 text-center">
-                              <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1 flex justify-center items-center gap-1"><Clock className="w-3 h-3" /> T</span>
+                              <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1 flex justify-center items-center gap-1"><Clock className="w-3 h-3" /> Trabajo</span>
                               <span className="text-sm font-bold text-red-400">
                                  {r.workDays}
                               </span>
                               {!isBaseline && <div className="flex justify-center">{getDifference(r.workDays, baseline.workDays, true)}</div>}
                            </div>
                            <div className="p-3 text-center">
-                              <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1 flex justify-center items-center gap-1"><Star className="w-3 h-3" /> N</span>
+                              <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1 flex justify-center items-center gap-1"><Star className="w-3 h-3" /> Noches</span>
                               <span className="text-sm font-bold text-violet-400">
                                  {r.totalNights}
                               </span>
                               {!isBaseline && <div className="flex justify-center">{getDifference(r.totalNights, baseline.totalNights, true)}</div>}
                            </div>
                            <div className="p-3 text-center">
-                              <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1 flex justify-center items-center gap-1"><Moon className="w-3 h-3" /> S</span>
+                              <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1 flex justify-center items-center gap-1"><Moon className="w-3 h-3" /> Saliente</span>
                               <span className="text-sm font-bold text-amber-400">
                                  {r.salienteDays}
                               </span>
                               {!isBaseline && <div className="flex justify-center">{getDifference(r.salienteDays, baseline.salienteDays)}</div>}
                            </div>
                            <div className="p-3 text-center">
-                              <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1 flex justify-center items-center gap-1"><Coffee className="w-3 h-3" /> L</span>
+                              <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1 flex justify-center items-center gap-1"><Coffee className="w-3 h-3" /> Libre</span>
                               <span className="text-sm font-bold text-emerald-400">
                                  {r.libreDays}
                               </span>
@@ -664,7 +664,7 @@ const App: React.FC = () => {
                             </div>
                             <div className="p-3 flex justify-center gap-3">
                                <div className="flex flex-col items-center">
-                                  <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">Sáb+Dom</span>
+                                  <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">Sábado + Domingo</span>
                                   <div className="flex items-center gap-1">
                                       <Sparkles className="w-3 h-3 text-emerald-400" />
                                       <span className="text-sm font-bold text-emerald-400">{r.weekendStats.cleanWeekends}</span>
@@ -672,7 +672,7 @@ const App: React.FC = () => {
                                </div>
                                <div className="w-px bg-slate-700 h-8 self-center"></div>
                                <div className="flex flex-col items-center">
-                                  <span className="text-[8px] font-bold text-amber-400 uppercase tracking-wider mb-0.5">Sal+Dom</span>
+                                  <span className="text-[8px] font-bold text-amber-400 uppercase tracking-wider mb-0.5">Saliente + Domingo</span>
                                   <div className="flex items-center gap-1">
                                       <Sunrise className="w-3 h-3 text-amber-400" />
                                       <span className="text-sm font-bold text-amber-400">{r.weekendStats.salienteWeekends}</span>
@@ -704,11 +704,11 @@ const App: React.FC = () => {
                               <div className="grid grid-cols-1 gap-2 mb-4 text-[10px] bg-slate-900/50 p-2 rounded border border-slate-700/50">
                                    <div className="flex items-center gap-2">
                                       <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                                      <span className="text-slate-300">L+L (Completo)</span>
+                                      <span className="text-slate-300">Libre + Libre (Completo)</span>
                                    </div>
                                    <div className="flex items-center gap-2">
                                       <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                                      <span className="text-slate-300">S+L (Parcial)</span>
+                                      <span className="text-slate-300">Saliente + Libre (Parcial)</span>
                                    </div>
                                 </div>
 
@@ -820,11 +820,11 @@ const App: React.FC = () => {
       <footer className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-800 py-5 z-40">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-6 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
           <div className="flex flex-wrap justify-center gap-8">
-            <span className="flex items-center gap-2.5 text-red-400"><div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"></div> Trabajo (T)</span>
+            <span className="flex items-center gap-2.5 text-red-400"><div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"></div> Trabajo</span>
             <span className="flex items-center gap-2.5 text-blue-400"><div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]"></div> Plantilla</span>
-            <span className="flex items-center gap-2.5 text-violet-400"><div className="w-2.5 h-2.5 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.4)]"></div> Noches (N)</span>
-            <span className="flex items-center gap-2.5 text-amber-400"><div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]"></div> Saliente (S)</span>
-            <span className="flex items-center gap-2.5 text-emerald-400"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div> Libre (L)</span>
+            <span className="flex items-center gap-2.5 text-violet-400"><div className="w-2.5 h-2.5 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.4)]"></div> Noches</span>
+            <span className="flex items-center gap-2.5 text-amber-400"><div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]"></div> Saliente</span>
+            <span className="flex items-center gap-2.5 text-emerald-400"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div> Libre</span>
           </div>
           <div className="opacity-40 hover:opacity-100 transition-opacity cursor-default">
             Shift Stats v2.1 • 2025
