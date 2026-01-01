@@ -33,7 +33,9 @@ import {
   Star,
   Users,
   ShieldCheck,
-  AlertTriangle
+  AlertTriangle,
+  Sigma,
+  BookOpen
 } from 'lucide-react';
 import { RotationConfig, AnalysisResult } from './types';
 import { ShiftRotationAnalyzer } from './logic';
@@ -79,6 +81,129 @@ const Tooltip = ({ content }: { content: string }) => {
         )}
     </>
   );
+};
+
+const MathExplanation = () => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <div className="bg-slate-900 rounded-2xl shadow-xl border border-slate-800 overflow-hidden">
+             <button 
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full px-6 py-5 flex items-center justify-between text-indigo-400 hover:text-indigo-300 hover:bg-slate-800/50 transition-all group"
+             >
+                <div className="flex items-center gap-3">
+                    <div className="bg-indigo-500/20 p-2 rounded-lg">
+                        <Sigma className="w-5 h-5" />
+                    </div>
+                    <div className="text-left">
+                        <span className="block font-bold text-sm uppercase tracking-wider">Metodología de Cálculo</span>
+                        <span className="text-xs text-slate-500 font-normal">Desglose de fórmulas matemáticas utilizadas</span>
+                    </div>
+                </div>
+                {isOpen ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
+             </button>
+             
+             {isOpen && (
+                <div className="px-6 pb-8 pt-2 animate-in slide-in-from-top-2 fade-in duration-300 border-t border-slate-800/50">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm text-slate-400 mt-4">
+                        
+                        {/* Box 1 */}
+                        <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                            <h4 className="text-white font-bold mb-3 flex items-center gap-2">
+                                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                                1. La Demanda (Necesidad)
+                            </h4>
+                            <p className="mb-2 leading-relaxed text-xs">
+                                El objetivo es cubrir 16 puestos cada día del año (365 días).
+                            </p>
+                            <ul className="space-y-1 font-mono text-xs bg-slate-900 p-2 rounded">
+                                <li className="flex justify-between">
+                                    <span>Puestos Día:</span> <span className="text-white">12</span>
+                                </li>
+                                <li className="flex justify-between">
+                                    <span>Puestos Noche:</span> <span className="text-white">4</span>
+                                </li>
+                                <li className="flex justify-between border-t border-slate-700 pt-1 mt-1">
+                                    <span>Total Puestos:</span> <span className="text-white">16</span>
+                                </li>
+                            </ul>
+                            <div className="mt-2 text-xs">
+                                <span className="text-indigo-400 font-bold">Total Turnos Anuales:</span>
+                                <br />
+                                16 puestos × 365 días = <span className="text-white font-bold">5.840 turnos</span>.
+                            </div>
+                        </div>
+
+                        {/* Box 2 */}
+                        <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                             <h4 className="text-white font-bold mb-3 flex items-center gap-2">
+                                <Users className="w-4 h-4 text-blue-400" />
+                                2. Capacidad Individual
+                            </h4>
+                            <p className="mb-2 leading-relaxed text-xs">
+                                Cuántos turnos reales hace una persona al año, descontando vacaciones.
+                            </p>
+                            <div className="font-mono text-xs bg-slate-900 p-2 rounded space-y-2">
+                                <div>
+                                    <span className="text-slate-500 block">Ciclos Brutos al año:</span>
+                                    365 días ÷ (Días Trabajo + Descanso)
+                                </div>
+                                <div>
+                                    <span className="text-slate-500 block">Turnos Brutos:</span>
+                                    Ciclos × Días de Trabajo
+                                </div>
+                                <div className="border-t border-slate-700 pt-1 text-emerald-400">
+                                    <span className="text-slate-500 block">Turnos Efectivos (Netos):</span>
+                                    Turnos Brutos - <span className="text-white font-bold">24 días (Vacaciones)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                         {/* Box 3 */}
+                         <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                            <h4 className="text-white font-bold mb-3 flex items-center gap-2">
+                                <AlertTriangle className="w-4 h-4 text-amber-400" />
+                                3. El Factor Limitante
+                            </h4>
+                             <p className="mb-2 leading-relaxed text-xs">
+                                No basta con cubrir horas totales. Si tu rotación hace pocas noches, necesitarás más gente solo para cubrir la noche.
+                            </p>
+                            <div className="space-y-3 mt-3">
+                                <div className="bg-slate-900 p-2 rounded border-l-2 border-blue-500">
+                                    <span className="text-[10px] uppercase font-bold text-blue-400 block mb-1">Cálculo A: Por Volumen</span>
+                                    <span className="font-mono text-xs">5.840 ÷ Turnos Efectivos</span>
+                                </div>
+                                <div className="bg-slate-900 p-2 rounded border-l-2 border-violet-500">
+                                    <span className="text-[10px] uppercase font-bold text-violet-400 block mb-1">Cálculo B: Por Noches</span>
+                                    <span className="font-mono text-xs">1.460 (4×365) ÷ Noches Efectivas</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Box 4 */}
+                        <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                            <h4 className="text-white font-bold mb-3 flex items-center gap-2">
+                                <Calculator className="w-4 h-4 text-indigo-400" />
+                                4. Resultado Final
+                            </h4>
+                            <p className="mb-3 leading-relaxed text-xs">
+                                El sistema elige automáticamente el <span className="text-white font-bold">MAYOR</span> de los dos cálculos anteriores.
+                            </p>
+                            <div className="text-xs bg-indigo-500/10 p-3 rounded border border-indigo-500/20">
+                                Si necesitas 25 personas por horas, pero 30 para cubrir las noches... 
+                                <br/><br/>
+                                <span className="text-white font-bold text-sm">Plantilla Min = 30</span>
+                                <br/>
+                                <span className="text-indigo-300 italic">(Tendrás exceso de personal de día, pero es la única forma de cubrir la noche).</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+             )}
+        </div>
+    );
 };
 
 const App: React.FC = () => {
@@ -150,7 +275,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-20 selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-slate-950 text-slate-100 pb-40 md:pb-24 selection:bg-indigo-500/30">
       <header className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -215,7 +340,7 @@ const App: React.FC = () => {
                     </div>
                     <div className="text-right">
                        <span className="block text-xs text-slate-500 mb-0.5">Vacaciones</span>
-                       <span className="font-bold text-white text-sm">30 días/año</span>
+                       <span className="font-bold text-white text-sm">24 días laborables</span>
                     </div>
                  </div>
               </div>
@@ -235,22 +360,22 @@ const App: React.FC = () => {
                 </button>
               </div>
               
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {rotations.map((rotation, index) => {
                   const isWorkValid = !isNaN(rotation.workDays) && rotation.workDays > 0;
                   const isRestValid = !isNaN(rotation.restDays) && rotation.restDays >= 0;
                   const isNightsValid = !isNaN(rotation.nights) && rotation.nights >= 0 && rotation.nights <= rotation.workDays;
 
                   return (
-                    <div key={rotation.id} className="grid grid-cols-12 gap-3 items-start bg-slate-800/50 p-4 rounded-xl border border-slate-700 relative group">
+                    <div key={rotation.id} className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 relative group flex flex-col gap-4">
                       {index === 0 && (
-                        <div className="absolute -left-1 top-1/2 -translate-y-1/2 -translate-x-full pr-3 hidden lg:block">
-                           <span className="text-[10px] uppercase font-bold text-slate-500 rotate-270 whitespace-nowrap bg-slate-900 px-2 py-1 rounded border border-slate-800">Referencia</span>
-                        </div>
+                         <div className="absolute top-2 right-2">
+                            <span className="text-[9px] uppercase font-bold text-slate-300 bg-slate-700 px-2 py-0.5 rounded border border-slate-600">Referencia</span>
+                         </div>
                       )}
                       
-                      {/* Name - 12 cols mobile, 3 cols desktop */}
-                      <div className="col-span-12 lg:col-span-3">
+                      {/* Name */}
+                      <div>
                         <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider">
                           Nombre
                         </label>
@@ -261,34 +386,36 @@ const App: React.FC = () => {
                         />
                       </div>
 
-                      {/* Work Days - 4 cols mobile, 3 cols desktop */}
-                      <div className="col-span-4 lg:col-span-3">
-                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider truncate">
-                          Trabajo <Tooltip content="Días seguidos de trabajo." />
-                        </label>
-                        <input 
-                          type="number"
-                          value={isNaN(rotation.workDays) ? "" : rotation.workDays}
-                          onChange={(e) => updateRotation(rotation.id, 'workDays', e.target.value)}
-                          className={`w-full px-3 py-2 rounded-lg bg-slate-800 border text-white text-sm outline-none transition-all ${isWorkValid ? 'border-slate-700 focus:ring-indigo-500' : 'border-red-500/50 bg-red-500/5 focus:ring-red-500'}`}
-                        />
+                      <div className="grid grid-cols-2 gap-3">
+                          {/* Work Days */}
+                          <div>
+                            <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider truncate">
+                              Trabajo <Tooltip content="Días seguidos de trabajo." />
+                            </label>
+                            <input 
+                              type="number"
+                              value={isNaN(rotation.workDays) ? "" : rotation.workDays}
+                              onChange={(e) => updateRotation(rotation.id, 'workDays', e.target.value)}
+                              className={`w-full px-3 py-2 rounded-lg bg-slate-800 border text-white text-sm outline-none transition-all ${isWorkValid ? 'border-slate-700 focus:ring-indigo-500' : 'border-red-500/50 bg-red-500/5 focus:ring-red-500'}`}
+                            />
+                          </div>
+
+                          {/* Nights */}
+                          <div>
+                            <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider truncate">
+                              Noches <Tooltip content="Noches dentro de los días de trabajo." />
+                            </label>
+                            <input 
+                              type="number"
+                              value={isNaN(rotation.nights) ? "" : rotation.nights}
+                              onChange={(e) => updateRotation(rotation.id, 'nights', e.target.value)}
+                              className={`w-full px-3 py-2 rounded-lg bg-slate-800 border text-white text-sm outline-none transition-all ${isNightsValid ? 'border-slate-700 focus:ring-indigo-500' : 'border-red-500/50 bg-red-500/5 focus:ring-red-500'}`}
+                            />
+                          </div>
                       </div>
 
-                      {/* Nights - 4 cols mobile, 3 cols desktop */}
-                      <div className="col-span-4 lg:col-span-3">
-                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider truncate">
-                          Noches <Tooltip content="Noches dentro de los días de trabajo." />
-                        </label>
-                        <input 
-                          type="number"
-                          value={isNaN(rotation.nights) ? "" : rotation.nights}
-                          onChange={(e) => updateRotation(rotation.id, 'nights', e.target.value)}
-                          className={`w-full px-3 py-2 rounded-lg bg-slate-800 border text-white text-sm outline-none transition-all ${isNightsValid ? 'border-slate-700 focus:ring-indigo-500' : 'border-red-500/50 bg-red-500/5 focus:ring-red-500'}`}
-                        />
-                      </div>
-
-                      {/* Rest Days - 4 cols mobile, 2 cols desktop */}
-                      <div className="col-span-4 lg:col-span-2">
+                      {/* Rest Days */}
+                      <div>
                         <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider truncate">
                           Descanso <Tooltip content="Total días libres." />
                         </label>
@@ -300,12 +427,12 @@ const App: React.FC = () => {
                         />
                       </div>
 
-                      {/* Delete Button - Absolute positioned or in column */}
-                      <div className="col-span-12 lg:col-span-1 flex justify-end lg:pt-7">
+                      {/* Delete Button */}
+                      <div className="mt-auto pt-2">
                         <button 
                           onClick={() => removeRotation(rotation.id)}
                           disabled={rotations.length <= 1}
-                          className="p-2 text-slate-500 hover:text-red-400 disabled:opacity-20 transition-colors w-full lg:w-auto flex justify-center bg-slate-800 lg:bg-transparent rounded-lg lg:rounded-none border border-slate-700 lg:border-none"
+                          className="p-2 text-slate-500 hover:text-red-400 disabled:opacity-20 transition-colors w-full flex justify-center bg-slate-800 rounded-lg border border-slate-700"
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
@@ -451,203 +578,14 @@ const App: React.FC = () => {
               </div>
             </section>
 
-            {/* Tabla Detallada Responsive */}
+            {/* Resumen de Días Anuales (Grid Card View) */}
             <section className="bg-slate-900 rounded-2xl shadow-xl border border-slate-800 overflow-hidden">
               <div className="px-6 sm:px-8 py-6 border-b border-slate-800 flex flex-col sm:flex-row gap-4 justify-between items-center text-center sm:text-left">
                 <h2 className="text-xl sm:text-2xl font-bold text-white">Resumen de Días Anuales</h2>
                 <span className="text-xs font-bold text-slate-500 bg-slate-800 px-3 py-1 rounded-full uppercase tracking-widest">Año {year}</span>
               </div>
               
-              {/* Desktop View (Table) */}
-              <div className="hidden lg:block overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-slate-900/50 border-b border-slate-800">
-                    <tr>
-                      <th className="px-8 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest">
-                        Rotación <Tooltip content="Configuración de turno seleccionada." />
-                      </th>
-                      <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
-                        Trabajo (T) <Tooltip content="Días totales de trabajo al año." />
-                      </th>
-                      <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
-                         Plantilla Min. <Tooltip content="Personas necesarias. Se calcula tomando el mayor de: a) Gente para volumen (16 puestos) o b) Gente para cubrir noches (4 puestos)." />
-                      </th>
-                       <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
-                        Noches (N) <Tooltip content="Total noches anuales." />
-                      </th>
-                      <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
-                        Saliente (S) <Tooltip content="Días de salida de turno." />
-                      </th>
-                      <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
-                        Libre (L) <Tooltip content="Días completamente libres." />
-                      </th>
-                      <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
-                        Findes Full <Tooltip content="Fines de semana con Sábado y Domingo sin trabajo (L+L o S+L)." />
-                      </th>
-                      <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest">Acción</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800">
-                    {results.map((r, index) => {
-                       const baseline = results[0];
-                       const isBaseline = index === 0;
-                       const isActive = activeDetailId === r.id;
-                       const limitingIsNights = r.staffing.limitingFactor === 'nights';
-                       const isImpossible = r.staffing.limitingFactor === 'impossible';
-
-                       return (
-                      <React.Fragment key={r.id}>
-                      <tr className={`transition-colors group ${isActive ? 'bg-slate-800/80' : 'hover:bg-slate-800/50'}`}>
-                        <td className="px-8 py-5">
-                          <div className="font-bold text-white group-hover:text-indigo-400 transition-colors flex items-center gap-2">
-                             {r.rotationName}
-                             {isBaseline && <span className="text-[9px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded uppercase tracking-wider">Base</span>}
-                          </div>
-                          <div className="text-[10px] text-slate-500 font-mono mt-0.5">{r.pattern}</div>
-                        </td>
-                        <td className="px-6 py-5 text-center">
-                          <span className="inline-flex items-center gap-1.5 font-bold text-red-400 bg-red-400/10 px-3 py-1.5 rounded-xl border border-red-400/20">
-                            <Clock className="w-3.5 h-3.5" /> {r.workDays}
-                          </span>
-                          {!isBaseline && getDifference(r.workDays, baseline.workDays, true)}
-                        </td>
-                         <td className="px-6 py-5 text-center">
-                          <span className={`inline-flex items-center gap-1.5 font-bold px-3 py-1.5 rounded-xl border ${isImpossible ? 'text-slate-400 bg-slate-800 border-slate-700' : 'text-blue-400 bg-blue-400/10 border-blue-400/20'}`}>
-                            {isImpossible ? (
-                                <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-                            ) : limitingIsNights ? (
-                                <div className="relative">
-                                  <Users className="w-3.5 h-3.5" />
-                                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-violet-500 rounded-full border border-slate-900" title="Limitado por Noches"></div>
-                                </div>
-                            ) : (
-                                <Users className="w-3.5 h-3.5" />
-                            )}
-                            
-                            {isImpossible ? 'N/A' : r.staffing.requiredHeadcount}
-                          </span>
-                          {!isBaseline && !isImpossible && getDifference(r.staffing.requiredHeadcount, baseline.staffing.requiredHeadcount, true)}
-                          
-                          {limitingIsNights && (
-                             <div className="text-[9px] text-violet-400 mt-1 font-medium">Faltan Noches</div>
-                          )}
-                          {isImpossible && (
-                             <div className="text-[9px] text-amber-500 mt-1 font-medium">Sin noches</div>
-                          )}
-                        </td>
-                        <td className="px-6 py-5 text-center">
-                          <span className="inline-flex items-center gap-1.5 font-bold text-violet-400 bg-violet-400/10 px-3 py-1.5 rounded-xl border border-violet-400/20">
-                            <Star className="w-3.5 h-3.5" /> {r.totalNights}
-                          </span>
-                          {!isBaseline && getDifference(r.totalNights, baseline.totalNights, true)}
-                        </td>
-                        <td className="px-6 py-5 text-center">
-                          <span className="inline-flex items-center gap-1.5 font-bold text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-xl border border-amber-400/20">
-                            <Moon className="w-3.5 h-3.5" /> {r.salienteDays}
-                          </span>
-                          {!isBaseline && getDifference(r.salienteDays, baseline.salienteDays)}
-                        </td>
-                        <td className="px-6 py-5 text-center">
-                          <span className="inline-flex items-center gap-1.5 font-bold text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-xl border border-emerald-400/20">
-                            <Coffee className="w-3.5 h-3.5" /> {r.libreDays}
-                          </span>
-                          {!isBaseline && getDifference(r.libreDays, baseline.libreDays)}
-                        </td>
-                        <td className="px-6 py-5 text-center">
-                            <div className="flex flex-col items-center justify-center">
-                                <div className="text-xl font-black text-white flex items-center">
-                                    {r.weekendStats.fullWeekends}
-                                    {!isBaseline && getDifference(r.weekendStats.fullWeekends, baseline.weekendStats.fullWeekends)}
-                                </div>
-                                <div className="flex gap-3 mt-1.5 border-t border-slate-700 pt-1.5 px-2">
-                                    <div className="flex flex-col items-center" title="Sábado y Domingo Libres">
-                                       <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">Sáb+Dom</span>
-                                       <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
-                                          <Sparkles className="w-3 h-3" />
-                                          {r.weekendStats.cleanWeekends}
-                                       </span>
-                                    </div>
-                                    <div className="w-px bg-slate-700 h-6"></div>
-                                    <div className="flex flex-col items-center" title="Sábado Saliente y Domingo Libre">
-                                       <span className="text-[8px] font-bold text-amber-400 uppercase tracking-wider mb-0.5">Sal+Dom</span>
-                                       <span className="text-xs font-bold text-amber-400 flex items-center gap-1">
-                                          <Sunrise className="w-3 h-3" />
-                                          {r.weekendStats.salienteWeekends}
-                                       </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td className="px-6 py-5">
-                          <button 
-                            onClick={() => setActiveDetailId(activeDetailId === r.id ? null : r.id)}
-                            className={`text-sm font-bold flex items-center gap-2 px-3 py-2 rounded-xl border transition-all ${isActive ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'text-slate-400 hover:text-indigo-400 border-transparent hover:bg-slate-700/50'}`}
-                          >
-                            {isActive ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                            Detalles
-                          </button>
-                        </td>
-                      </tr>
-                      {isActive && (
-                        <tr>
-                          <td colSpan={8} className="p-0 border-b border-slate-800">
-                             <div className="bg-slate-950/30 p-6 shadow-[inset_0_4px_10px_rgba(0,0,0,0.2)] animate-in fade-in slide-in-from-top-2 duration-300">
-                                <div className="flex items-center gap-3 mb-4">
-                                     <div className="bg-indigo-500/20 p-2 rounded-lg">
-                                       <Calendar className="w-5 h-5 text-indigo-400" />
-                                     </div>
-                                     <div>
-                                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Detalle de Fines de Semana</h3>
-                                        <p className="text-xs text-slate-500">Visualización completa del calendario para <span className="text-indigo-400 font-semibold">{r.rotationName}</span></p>
-                                     </div>
-                                </div>
-
-                                {/* Expanded Detail Legend */}
-                                <div className="flex flex-col sm:flex-row gap-4 mb-6 text-xs bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
-                                   <div className="flex items-center gap-2">
-                                      <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></span>
-                                      <span className="text-slate-300"><strong className="text-emerald-400">L+L (Completo):</strong> Sábado y Domingo Libres.</span>
-                                   </div>
-                                   <div className="flex items-center gap-2">
-                                      <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]"></span>
-                                      <span className="text-slate-300"><strong className="text-amber-400">S+L (Parcial):</strong> Sábado Saliente + Domingo Libre.</span>
-                                   </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                                    {r.weekendStats.details.map((w, idx) => (
-                                         <div key={idx} className={`p-3 rounded-lg border flex flex-col gap-2 transition-all hover:scale-[1.02] ${w.isFull ? 'bg-indigo-500/10 border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.1)]' : 'bg-slate-800/40 border-slate-700/40 opacity-60 hover:opacity-100 hover:bg-slate-800'}`}>
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-[10px] font-mono text-slate-400 font-medium">{w.date}</span>
-                                                {w.isFull ? <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400" /> : <AlertCircle className="w-3.5 h-3.5 text-slate-600" />}
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <div className={`flex-1 text-center py-1 px-1 rounded text-[10px] font-bold border ${w.saturday === 'L' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : w.saturday === 'S' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
-                                                    S: {w.saturday}
-                                                </div>
-                                                <div className={`flex-1 text-center py-1 px-1 rounded text-[10px] font-bold border ${w.sunday === 'L' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : w.sunday === 'S' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
-                                                    D: {w.sunday}
-                                                </div>
-                                            </div>
-                                            <div className={`text-[10px] font-bold text-center truncate ${w.isFull ? 'text-indigo-300' : 'text-slate-500'}`}>
-                                                {w.type || 'Turno Trabajo'}
-                                            </div>
-                                         </div>
-                                    ))}
-                                </div>
-                             </div>
-                          </td>
-                        </tr>
-                      )}
-                      </React.Fragment>
-                       )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Mobile View (Cards) */}
-              <div className="lg:hidden p-4 space-y-4 bg-slate-900">
+              <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {results.map((r, index) => {
                    const baseline = results[0];
                    const isBaseline = index === 0;
@@ -656,7 +594,7 @@ const App: React.FC = () => {
                    const isImpossible = r.staffing.limitingFactor === 'impossible';
 
                    return (
-                      <div key={r.id} className="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden">
+                      <div key={r.id} className="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden hover:border-indigo-500/30 transition-all">
                         {/* Card Header */}
                         <div className="p-4 border-b border-slate-700/50 flex justify-between items-start">
                            <div>
@@ -754,7 +692,7 @@ const App: React.FC = () => {
                            </button>
                         </div>
 
-                        {/* Details Panel Mobile */}
+                        {/* Details Panel */}
                         {isActive && (
                            <div className="p-4 border-t border-slate-700 bg-slate-950/30">
                               <div className="mb-4">
@@ -762,7 +700,7 @@ const App: React.FC = () => {
                                   <p className="text-[10px] text-slate-500">Calendario completo para <span className="text-indigo-400">{r.rotationName}</span></p>
                               </div>
 
-                              {/* Mobile Legend */}
+                              {/* Legend */}
                               <div className="grid grid-cols-1 gap-2 mb-4 text-[10px] bg-slate-900/50 p-2 rounded border border-slate-700/50">
                                    <div className="flex items-center gap-2">
                                       <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
@@ -873,6 +811,9 @@ const App: React.FC = () => {
             </div>
           </div>
         )}
+        
+        {/* New Math Explanation Section - Now inside main */}
+        <MathExplanation />
 
       </main>
 
@@ -886,7 +827,7 @@ const App: React.FC = () => {
             <span className="flex items-center gap-2.5 text-emerald-400"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div> Libre (L)</span>
           </div>
           <div className="opacity-40 hover:opacity-100 transition-opacity cursor-default">
-            Shift Stats v2.0 • 2025
+            Shift Stats v2.1 • 2025
           </div>
         </div>
       </footer>

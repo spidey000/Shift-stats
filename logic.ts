@@ -148,26 +148,36 @@ export class ShiftRotationAnalyzer {
     // Constraints:
     // 1. Total Posts = 16 (12 Day + 4 Night)
     // 2. Night Posts = 4 (Must be covered specifically)
-    // 3. Vacation = 30 days/year (Calendar days availability = 365 - 30 = 335)
+    // 3. Vacation = 24 WORKING DAYS (SHIFTS) per year.
     
     const REQUIRED_NIGHT_POSTS = 4;
     const REQUIRED_DAY_POSTS = 12;
     const TOTAL_POSTS = REQUIRED_DAY_POSTS + REQUIRED_NIGHT_POSTS; // 16
     const CALENDAR_DAYS = 365;
-    const VACATION_DAYS = 30;
-    const AVAILABLE_DAYS = CALENDAR_DAYS - VACATION_DAYS; // 335 effective days per person/year
+    const VACATION_SHIFTS = 24; // Fixed working days (shifts)
 
     // Annual Demand (Shifts)
     const demandTotalShifts = TOTAL_POSTS * CALENDAR_DAYS; // 16 * 365 = 5840
     const demandNightShifts = REQUIRED_NIGHT_POSTS * CALENDAR_DAYS; // 4 * 365 = 1460
 
     // Individual Capacity (Shifts per person per year)
-    // How many full cycles can a person do in 335 days?
-    const cyclesPerPersonYear = cycleLength > 0 ? AVAILABLE_DAYS / cycleLength : 0;
+    // Gross Capacity = How many shifts would I work if I worked 365 days?
+    const cyclesPerPersonYear = cycleLength > 0 ? CALENDAR_DAYS / cycleLength : 0;
+    const grossWorkDaysPerPerson = cyclesPerPersonYear * workDaysPerCycle;
     
-    // Effective shifts a person contributes annually
-    const effectiveWorkDaysPerPerson = cyclesPerPersonYear * workDaysPerCycle;
-    const effectiveNightsPerPerson = cyclesPerPersonYear * nightsPerCycle;
+    // Effective Capacity = Gross Capacity - 24 Vacation Shifts
+    const effectiveWorkDaysPerPerson = Math.max(0, grossWorkDaysPerPerson - VACATION_SHIFTS);
+
+    // Night Capacity Calculation
+    // We assume vacation days are taken proportionally across the shift pattern.
+    // Ratio of nights within work days:
+    const nightRatio = workDaysPerCycle > 0 ? nightsPerCycle / workDaysPerCycle : 0;
+    
+    // We lose nights proportional to the 24 vacation shifts taken
+    const lostNightsToVacation = VACATION_SHIFTS * nightRatio;
+    
+    const grossNightsPerPerson = cyclesPerPersonYear * nightsPerCycle;
+    const effectiveNightsPerPerson = Math.max(0, grossNightsPerPerson - lostNightsToVacation);
 
     // 1. Headcount needed for TOTAL VOLUME (Volume Constraint)
     let minStaffForVolume = 0;
@@ -193,9 +203,6 @@ export class ShiftRotationAnalyzer {
         requiredHeadcount = 0;
     } else {
         // We need the maximum of the two constraints to satisfy BOTH.
-        // If we have enough for volume but not for nights, we must hire more to cover nights (and have excess day capacity).
-        // If we have enough for nights but not volume, we must hire more for volume (days).
-        
         if (minStaffForNights > minStaffForVolume) {
             limitingFactor = 'nights';
             requiredHeadcount = Math.ceil(minStaffForNights);
