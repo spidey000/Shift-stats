@@ -19,7 +19,6 @@ export interface WeekendStats {
 
 export interface RotationConfig {
   id: string;
-  name: string;
   workDays: number;
   restDays: number;
   nights: number;

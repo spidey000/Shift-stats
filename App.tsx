@@ -34,10 +34,9 @@ import {
   Users,
   ShieldCheck,
   AlertTriangle,
-  Sigma,
-  BookOpen
+  Sigma
 } from 'lucide-react';
-import { RotationConfig, AnalysisResult } from './types';
+import { RotationConfig } from './types';
 import { ShiftRotationAnalyzer } from './logic';
 
 // Reusable Tooltip Component using Portal
@@ -106,7 +105,7 @@ const MathExplanation = () => {
              
              {isOpen && (
                 <div className="px-6 pb-8 pt-2 animate-in slide-in-from-top-2 fade-in duration-300 border-t border-slate-800/50">
-                    <div className="grid grid-cols-1 md:grid-cols-2 min-[1440px]:grid-cols-4 gap-6 text-sm text-slate-400 mt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 min-[1300px]:grid-cols-4 gap-6 text-sm text-slate-400 mt-4">
                         
                         {/* Box 1 */}
                         <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
@@ -115,7 +114,7 @@ const MathExplanation = () => {
                                 1. La Demanda (Necesidad)
                             </h4>
                             <p className="mb-2 leading-relaxed text-xs">
-                                El objetivo es cubrir 16 puestos cada día del año (365 días).
+                                El objetivo es cubrir 18 puestos diarios todo el año.
                             </p>
                             <ul className="space-y-1 font-mono text-xs bg-slate-900 p-2 rounded">
                                 <li className="flex justify-between">
@@ -124,14 +123,17 @@ const MathExplanation = () => {
                                 <li className="flex justify-between">
                                     <span>Puestos Noche:</span> <span className="text-white">4</span>
                                 </li>
+                                <li className="flex justify-between text-indigo-300">
+                                    <span>Guardias:</span> <span className="text-white">2</span>
+                                </li>
                                 <li className="flex justify-between border-t border-slate-700 pt-1 mt-1">
-                                    <span>Total Puestos:</span> <span className="text-white">16</span>
+                                    <span>Total Puestos:</span> <span className="text-white">18</span>
                                 </li>
                             </ul>
                             <div className="mt-2 text-xs">
                                 <span className="text-indigo-400 font-bold">Total Turnos Anuales:</span>
                                 <br />
-                                16 puestos × 365 días = <span className="text-white font-bold">5.840 turnos</span>.
+                                18 puestos × 365 días = <span className="text-white font-bold">6.570 turnos</span>.
                             </div>
                         </div>
 
@@ -155,7 +157,7 @@ const MathExplanation = () => {
                                 </div>
                                 <div className="border-t border-slate-700 pt-1 text-emerald-400">
                                     <span className="text-slate-500 block">Turnos Efectivos (Netos):</span>
-                                    Turnos Brutos - <span className="text-white font-bold">24 días (Vacaciones)</span>
+                                    Turnos Brutos - <span className="text-white font-bold">22 días (Vacaciones)</span>
                                 </div>
                             </div>
                         </div>
@@ -167,16 +169,16 @@ const MathExplanation = () => {
                                 3. El Factor Limitante
                             </h4>
                              <p className="mb-2 leading-relaxed text-xs">
-                                No basta con cubrir horas totales. Si tu rotación hace pocas noches, necesitarás más gente solo para cubrir la noche.
+                                Se calcula la necesidad y se añade un <span className="text-white font-bold">5% de backup</span> por bajas.
                             </p>
                             <div className="space-y-3 mt-3">
                                 <div className="bg-slate-900 p-2 rounded border-l-2 border-blue-500">
                                     <span className="text-[10px] uppercase font-bold text-blue-400 block mb-1">Cálculo A: Por Volumen</span>
-                                    <span className="font-mono text-xs">5.840 ÷ Turnos Efectivos</span>
+                                    <span className="font-mono text-xs">(6.570 ÷ Turnos Efec.) × 1.05</span>
                                 </div>
                                 <div className="bg-slate-900 p-2 rounded border-l-2 border-violet-500">
                                     <span className="text-[10px] uppercase font-bold text-violet-400 block mb-1">Cálculo B: Por Noches</span>
-                                    <span className="font-mono text-xs">1.460 (4×365) ÷ Noches Efectivas</span>
+                                    <span className="font-mono text-xs">(1.460 ÷ Noches Efec.) × 1.05</span>
                                 </div>
                             </div>
                         </div>
@@ -191,11 +193,11 @@ const MathExplanation = () => {
                                 El sistema elige automáticamente el <span className="text-white font-bold">MAYOR</span> de los dos cálculos anteriores.
                             </p>
                             <div className="text-xs bg-indigo-500/10 p-3 rounded border border-indigo-500/20">
-                                Si necesitas 25 personas por horas, pero 30 para cubrir las noches... 
+                                Ejemplo: Si A=25 y B=30
                                 <br/><br/>
                                 <span className="text-white font-bold text-sm">Plantilla Min = 30</span>
                                 <br/>
-                                <span className="text-indigo-300 italic">(Tendrás exceso de personal de día, pero es la única forma de cubrir la noche).</span>
+                                <span className="text-indigo-300 italic">(Exceso de personal de día inevitable para cubrir la noche + margen seguridad).</span>
                             </div>
                         </div>
 
@@ -207,13 +209,14 @@ const MathExplanation = () => {
 };
 
 const App: React.FC = () => {
-  const [year, setYear] = useState(new Date().getFullYear() + 1);
-  const [startDate, setStartDate] = useState(`${new Date().getFullYear() + 1}-01-01`);
-  // Default values updated to intuitive format: Work Days, Total Rest Days, Nights per cycle
+  // Use current year and Jan 1st as fixed defaults
+  const year = new Date().getFullYear();
+  const startDate = `${year}-01-01`;
+
   const [rotations, setRotations] = useState<RotationConfig[]>([
-    { id: '1', name: 'Actual (6-3)', workDays: 6, restDays: 3, nights: 2 },
-    { id: '2', name: 'Opción A (5-3)', workDays: 5, restDays: 3, nights: 2 },
-    { id: '3', name: 'Opción B (6-4)', workDays: 6, restDays: 4, nights: 2 },
+    { id: '1', workDays: 6, restDays: 3, nights: 2 },
+    { id: '2', workDays: 5, restDays: 3, nights: 2 },
+    { id: '3', workDays: 6, restDays: 4, nights: 2 },
   ]);
 
   const [activeDetailId, setActiveDetailId] = useState<string | null>(null);
@@ -236,8 +239,8 @@ const App: React.FC = () => {
 
   const addRotation = () => {
     const newId = Math.random().toString(36).substr(2, 9);
-    // Default to a standard 5 work, 3 rest (2 clean) rotation
-    setRotations([...rotations, { id: newId, name: `Nueva ${rotations.length + 1}`, workDays: 5, restDays: 3, nights: 0 }]);
+    // Default to a standard 5 work, 3 rest (2 clean) rotation, name is now dynamic
+    setRotations([...rotations, { id: newId, workDays: 5, restDays: 3, nights: 0 }]);
   };
 
   const removeRotation = (id: string) => {
@@ -247,7 +250,6 @@ const App: React.FC = () => {
   const updateRotation = (id: string, field: keyof RotationConfig, value: string) => {
     setRotations(rotations.map(r => {
       if (r.id === id) {
-        if (field === 'name') return { ...r, [field]: value };
         const numVal = value === "" ? NaN : parseInt(value, 10);
         return { ...r, [field]: numVal };
       }
@@ -277,7 +279,7 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 pb-40 md:pb-24 selection:bg-indigo-500/30">
       <header className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="bg-indigo-600 p-2 rounded-lg shadow-lg shadow-indigo-500/20">
               <Calculator className="w-5 h-5 text-white" />
@@ -291,41 +293,17 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
         {/* Panel de Configuración */}
         <section className="bg-slate-900 rounded-2xl shadow-xl border border-slate-800 p-6">
-          <div className="flex flex-col min-[1440px]:flex-row gap-8">
-            <div className="min-[1440px]:w-1/3 space-y-6">
+          <div className="flex flex-col min-[1300px]:flex-row gap-8">
+            <div className="min-[1300px]:w-1/3 space-y-6">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-5 h-5 text-indigo-400" />
                 <h2 className="text-lg font-semibold text-white">Configuración General</h2>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-1.5">
-                    Año <Tooltip content="Año calendario sobre el que se calculan todos los días y estadísticas." />
-                  </label>
-                  <input 
-                    type="number" 
-                    value={isNaN(year) ? "" : year}
-                    onChange={(e) => setYear(parseInt(e.target.value, 10))}
-                    className="w-full px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder:text-slate-600"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-1.5">
-                    Inicio de ciclo <Tooltip content="La fecha de tu primer día de trabajo (T) del año. Esencial para sincronizar la rotación." />
-                  </label>
-                  <input 
-                    type="date" 
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all [color-scheme:dark]"
-                  />
-                </div>
-              </div>
-
+              
                {/* Cobertura Requerida Info Box */}
                <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50 mt-4">
                  <div className="flex items-center gap-2 mb-2">
@@ -334,19 +312,21 @@ const App: React.FC = () => {
                  </div>
                  <div className="flex justify-between items-end">
                     <div className="text-sm text-slate-400">
-                      Cubrir <span className="text-white font-bold">16 puestos</span> diarios:
+                      Cubrir <span className="text-white font-bold">18 puestos</span> diarios:
                       <br/>
-                      <span className="text-xs text-slate-500">12 Día + 4 Noche</span>
+                      <span className="text-xs text-slate-500">12 Día + 4 Noche + 2 Guardia</span>
+                      <br/>
+                      <span className="text-[10px] text-indigo-400 italic mt-1 block">+5% Margen (Bajas/Contingencia)</span>
                     </div>
                     <div className="text-right">
                        <span className="block text-xs text-slate-500 mb-0.5">Vacaciones</span>
-                       <span className="font-bold text-white text-sm">24 días laborables</span>
+                       <span className="font-bold text-white text-sm">22 días laborables</span>
                     </div>
                  </div>
               </div>
             </div>
 
-            <div className="min-[1440px]:w-2/3 space-y-4">
+            <div className="min-[1300px]:w-2/3 space-y-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Briefcase className="w-5 h-5 text-indigo-400" />
@@ -360,36 +340,39 @@ const App: React.FC = () => {
                 </button>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 min-[1440px]:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 min-[1300px]:grid-cols-4 gap-4">
                 {rotations.map((rotation, index) => {
                   const isWorkValid = !isNaN(rotation.workDays) && rotation.workDays > 0;
                   const isRestValid = !isNaN(rotation.restDays) && rotation.restDays >= 0;
                   const isNightsValid = !isNaN(rotation.nights) && rotation.nights >= 0 && rotation.nights <= rotation.workDays;
 
+                  // Generate dynamic name for the header
+                  const w = rotation.workDays || 0;
+                  const n = rotation.nights || 0;
+                  const r = rotation.restDays || 0;
+                  const dynamicHeader = index === 0
+                    ? `${w} Trabajo - ${n} Noches - ${r} Libres`
+                    : `${w}T - ${n}N - ${r}L`;
+
                   return (
                     <div key={rotation.id} className="bg-slate-800/50 p-3 rounded-xl border border-slate-700 relative group">
-                      {/* Header Row: Name + Delete */}
-                      <div className="flex items-end gap-2 mb-3">
-                         <div className="flex-1 relative">
+                      {/* Header Row: Dynamic Name + Delete */}
+                      <div className="flex justify-between items-center mb-3 border-b border-slate-700/50 pb-2">
+                         <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-white font-mono">
+                                {dynamicHeader}
+                            </span>
                              {index === 0 && (
-                                <span className="absolute -top-1.5 right-0 text-[8px] uppercase font-bold text-slate-300 bg-slate-700 px-1.5 py-0.5 rounded border border-slate-600">Ref</span>
+                                <span className="text-[9px] uppercase font-bold text-slate-300 bg-slate-700 px-1.5 py-0.5 rounded border border-slate-600">Ref</span>
                              )}
-                            <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5 tracking-wider">
-                              Nombre
-                            </label>
-                            <input 
-                              value={rotation.name}
-                              onChange={(e) => updateRotation(rotation.id, 'name', e.target.value)}
-                              className="w-full px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm focus:ring-1 focus:ring-indigo-500 outline-none"
-                            />
                          </div>
                          <button 
                             onClick={() => removeRotation(rotation.id)}
                             disabled={rotations.length <= 1}
-                            className="flex-none mb-[1px] p-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+                            className="p-1.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
                             title="Eliminar rotación"
                           >
-                            <Trash2 className="w-5 h-5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                       </div>
 
@@ -442,9 +425,9 @@ const App: React.FC = () => {
         {results.length > 0 ? (
           <>
             {/* Tarjetas de Resumen y Recomendación */}
-            <div className="grid grid-cols-1 min-[1440px]:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 min-[1300px]:grid-cols-3 gap-6">
               {bestRotation && (
-                <div className="min-[1440px]:col-span-2 bg-gradient-to-br from-indigo-600 to-violet-700 rounded-2xl shadow-xl p-8 text-white relative overflow-hidden">
+                <div className="min-[1300px]:col-span-2 bg-gradient-to-br from-indigo-600 to-violet-700 rounded-2xl shadow-xl p-8 text-white relative overflow-hidden">
                   <div className="relative z-10">
                     <div className="flex items-center gap-2 mb-4">
                       <Award className="w-8 h-8 text-yellow-400" />
@@ -579,7 +562,7 @@ const App: React.FC = () => {
                 <span className="text-xs font-bold text-slate-500 bg-slate-800 px-3 py-1 rounded-full uppercase tracking-widest">Año {year}</span>
               </div>
               
-              <div className="p-4 grid grid-cols-1 md:grid-cols-2 min-[1440px]:grid-cols-3 gap-6">
+              <div className="p-4 grid grid-cols-1 md:grid-cols-2 min-[1300px]:grid-cols-3 gap-6">
                 {results.map((r, index) => {
                    const baseline = results[0];
                    const isBaseline = index === 0;
@@ -744,7 +727,7 @@ const App: React.FC = () => {
                  </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 min-[1440px]:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 min-[1300px]:grid-cols-3 gap-6">
                 {results.map(r => (
                   <div key={r.id} className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700 hover:border-indigo-500/30 transition-all">
                      <div className="flex justify-between items-center mb-6">
@@ -799,13 +782,12 @@ const App: React.FC = () => {
           </div>
         )}
         
-        {/* New Math Explanation Section - Now inside main */}
         <MathExplanation />
 
       </main>
 
       <footer className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-800 py-5 z-40">
-        <div className="max-w-[1440px] mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-6 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
+        <div className="max-w-[1300px] mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-6 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
           <div className="flex flex-wrap justify-center gap-8">
             <span className="flex items-center gap-2.5 text-red-400"><div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"></div> Trabajo</span>
             <span className="flex items-center gap-2.5 text-blue-400"><div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]"></div> Plantilla</span>

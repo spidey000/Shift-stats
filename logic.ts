@@ -146,18 +146,21 @@ export class ShiftRotationAnalyzer {
 
     // --- ADVANCED STAFFING CALCULATION ---
     // Constraints:
-    // 1. Total Posts = 16 (12 Day + 4 Night)
+    // 1. Total Posts = 18 (12 Day + 4 Night + 2 Guards)
     // 2. Night Posts = 4 (Must be covered specifically)
-    // 3. Vacation = 24 WORKING DAYS (SHIFTS) per year.
+    // 3. Vacation = 22 WORKING DAYS (SHIFTS) per year.
+    // 4. Backup = +5% for sickness/contingency.
     
     const REQUIRED_NIGHT_POSTS = 4;
     const REQUIRED_DAY_POSTS = 12;
-    const TOTAL_POSTS = REQUIRED_DAY_POSTS + REQUIRED_NIGHT_POSTS; // 16
+    const REQUIRED_GUARD_POSTS = 2; // New: 2 guards shared
+    const TOTAL_POSTS = REQUIRED_DAY_POSTS + REQUIRED_NIGHT_POSTS + REQUIRED_GUARD_POSTS; // 18
     const CALENDAR_DAYS = 365;
-    const VACATION_SHIFTS = 24; // Fixed working days (shifts)
+    const VACATION_SHIFTS = 22; // Fixed working days (shifts)
+    const BACKUP_FACTOR = 1.05; // 5% extra
 
     // Annual Demand (Shifts)
-    const demandTotalShifts = TOTAL_POSTS * CALENDAR_DAYS; // 16 * 365 = 5840
+    const demandTotalShifts = TOTAL_POSTS * CALENDAR_DAYS; // 18 * 365 = 6570
     const demandNightShifts = REQUIRED_NIGHT_POSTS * CALENDAR_DAYS; // 4 * 365 = 1460
 
     // Individual Capacity (Shifts per person per year)
@@ -165,7 +168,7 @@ export class ShiftRotationAnalyzer {
     const cyclesPerPersonYear = cycleLength > 0 ? CALENDAR_DAYS / cycleLength : 0;
     const grossWorkDaysPerPerson = cyclesPerPersonYear * workDaysPerCycle;
     
-    // Effective Capacity = Gross Capacity - 24 Vacation Shifts
+    // Effective Capacity = Gross Capacity - 22 Vacation Shifts
     const effectiveWorkDaysPerPerson = Math.max(0, grossWorkDaysPerPerson - VACATION_SHIFTS);
 
     // Night Capacity Calculation
@@ -173,7 +176,7 @@ export class ShiftRotationAnalyzer {
     // Ratio of nights within work days:
     const nightRatio = workDaysPerCycle > 0 ? nightsPerCycle / workDaysPerCycle : 0;
     
-    // We lose nights proportional to the 24 vacation shifts taken
+    // We lose nights proportional to the 22 vacation shifts taken
     const lostNightsToVacation = VACATION_SHIFTS * nightRatio;
     
     const grossNightsPerPerson = cyclesPerPersonYear * nightsPerCycle;
@@ -182,7 +185,8 @@ export class ShiftRotationAnalyzer {
     // 1. Headcount needed for TOTAL VOLUME (Volume Constraint)
     let minStaffForVolume = 0;
     if (effectiveWorkDaysPerPerson > 0) {
-        minStaffForVolume = demandTotalShifts / effectiveWorkDaysPerPerson;
+        // Raw headcount + 5% backup
+        minStaffForVolume = (demandTotalShifts / effectiveWorkDaysPerPerson) * BACKUP_FACTOR;
     }
 
     // 2. Headcount needed for NIGHT COVERAGE (Structural Constraint)
@@ -191,7 +195,8 @@ export class ShiftRotationAnalyzer {
         // Impossible to cover nights if the rotation has 0 nights
         minStaffForNights = Infinity; 
     } else {
-        minStaffForNights = demandNightShifts / effectiveNightsPerPerson;
+        // Raw headcount + 5% backup
+        minStaffForNights = (demandNightShifts / effectiveNightsPerPerson) * BACKUP_FACTOR;
     }
 
     // Final Determination
@@ -212,14 +217,14 @@ export class ShiftRotationAnalyzer {
         }
     }
 
-    // Pattern string reconstruction
-    const cleanRestDisplay = Math.max(0, (config.restDays || 0) - 1);
-    const patternStr = `${config.workDays || 0} (${nightsPerCycle}N) - S - ${cleanRestDisplay}`;
+    // Pattern string reconstruction (Dynamic Name Generation)
+    // Format: T - N - L (where L is total rest days including saliente)
+    const rotationName = `${config.workDays || 0}T - ${nightsPerCycle}N - ${(config.restDays || 0)}L`;
 
     return {
       id: config.id,
-      rotationName: config.name,
-      pattern: patternStr,
+      rotationName: rotationName,
+      pattern: rotationName, // Use the same string for pattern
       cycleLength,
       workDays: workCount,
       salienteDays: salienteCount,
